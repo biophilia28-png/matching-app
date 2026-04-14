@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>궁합 매칭 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f6f6;
+      color: #222;
+    }
+    .container {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .notice {
+      background: #fff3cd;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+    input, select, button, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      border: none;
+      background: #111;
+      color: white;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+    button.secondary {
+      background: #666;
+    }
+    .tag {
+      display: inline-block;
+      background: #eee;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+    .score {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .grade1 { background: #ffe8e8; }
+    .grade2 { background: #eef7ff; }
+    .grade3 { background: #f4f4f4; }
+    .small {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    .danger {
+      color: #c0392b;
+      font-weight: bold;
+    }
+    .messages {
+      min-height: 220px;
+      max-height: 380px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fafafa;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .msg {
+      background: white;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .msg.mine {
+      background: #e8f3ff;
+    }
+    .msg-meta {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .hidden {
+      display: none;
+    }
+    .section-title {
+      margin: 18px 0 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💘 궁합 매칭 앱</h1>
+
+    <div class="notice">
+      성별 + MBTI + 별자리 + 거리 + 확장 사주 궁합 버전입니다.<br>
+      년지 / 월지 / 일지 / 시지 / 천간 / 지지 / 음양 / 오행 / 20년 구간 보완 점수를 반영하고,<br>
+      초기 사용자 수가 적어도 매칭이 잘 뜨도록 기준을 완화했습니다.
+    </div>
+
+    <div class="card">
+      <h3>1. 로그인</h3>
+      <div id="authStatus" class="small">로그인 전</div>
+      <button onclick="login()">Firebase 로그인</button>
+    </div>
+
+    <div class="card">
+      <h3>2. 내 정보 입력</h3>
+
+      <label for="gender">성별</label>
+      <select id="gender">
+        <option value="male">남성</option>
+        <option value="female">여성</option>
+      </select>
+
+      <label for="birthDate">생년월일</label>
+      <input type="date" id="birthDate" />
+
+      <label for="birthTime">태어난 시간</label>
+      <input type="time" id="birthTime" />
+
+      <label for="mbti">MBTI</label>
+      <select id="mbti">
+        <option>INTJ</option>
+        <option>INTP</option>
+        <option>ENTJ</option>
+        <option>ENTP</option>
+        <option>INFJ</option>
+        <option>INFP</option>
+        <option>ENFJ</option>
+        <option>ENFP</option>
+        <option>ISTJ</option>
+        <option>ISFJ</option>
+        <option>ESTJ</option>
+        <option>ESFJ</option>
+        <option>ISTP</option>
+        <option>ISFP</option>
+        <option>ESTP</option>
+        <option>ESFP</option>
+      </select>
+
+      <label for="region">지역</label>
+      <select id="region"></select>
+
+      <label for="distanceLimit">최대 거리</label>
+      <select id="distanceLimit">
+        <option value="10">10km</option>
+        <option value="20">20km</option>
+        <option value="30">30km</option>
+        <option value="50" selected>50km</option>
+        <option value="100">100km</option>
+        <option value="300">300km</option>
+      </select>
+
+      <button onclick="saveProfile()">내 정보 저장</button>
+      <div id="saveStatus" class="small"></div>
+    </div>
+
+    <div class="card">
+      <h3>3. 내 프로필</h3>
+      <div id="myProfileBox" class="small">아직 저장된 정보 없음</div>
+    </div>
+
+    <div class="card">
+      <h3>4. 매칭</h3>
+      <button onclick="loadMatches()">매칭 불러오기</button>
+      <div id="matchInfo" class="small" style="margin-top:10px;"></div>
+    </div>
+
+    <div id="matchList"></div>
+
+    <div id="chatSection" class="card hidden">
+      <h3 id="chatTitle">채팅</h3>
+      <div class="small" id="chatSubTitle">상대와 실시간 채팅</div>
+      <div id="messages" class="messages"></div>
+      <input id="msgInput" type="text" placeholder="메시지를 입력하세요" />
+      <button onclick="sendMessage()">메시지 보내기</button>
+      <button class="secondary" onclick="closeChat()">채팅 닫기</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      getDocs,
+      addDoc,
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8Xy1YVVO3rkzOfHP6emVwYtISTTnS-ko",
+      authDomain: "matching-app-d2290.firebaseapp.com",
+      projectId: "matching-app-d2290",
+      storageBucket: "matching-app-d2290.firebasestorage.app",
+      messagingSenderId: "55086139014",
+      appId: "1:55086139014:web:25c73d916e719f9cd2b307",
+      measurementId: "G-ZP4LNL4N4V"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const REGION_COORDS = {
+      "서울 강남": [37.4979, 127.0276],
+      "서울 서초": [37.4837, 127.0324],
+      "서울 송파": [37.5145, 127.1066],
+      "서울 강동": [37.5301, 127.1238],
+      "서울 마포": [37.5663, 126.9019],
+      "서울 종로": [37.5735, 126.9788],
+      "서울 영등포": [37.5264, 126.8962],
+      "경기 성남": [37.4200, 127.1265],
+      "경기 수원": [37.2636, 127.0286],
+      "경기 고양": [37.6584, 126.8320],
+      "인천 연수": [37.4102, 126.6788],
+      "인천 부평": [37.5070, 126.7219],
+      "부산 해운대": [35.1632, 129.1636],
+      "부산 수영": [35.1456, 129.1131],
+      "대구 수성": [35.8583, 128.6306],
+      "대구 달서": [35.8299, 128.5327],
+      "대전 유성": [36.3622, 127.3568],
+      "대전 서구": [36.3551, 127.3834],
+      "광주 북구": [35.1741, 126.9111],
+      "광주 서구": [35.1520, 126.8900],
+      "울산 남구": [35.5384, 129.3114],
+      "울산 중구": [35.5697, 129.3320],
+      "세종": [36.4800, 127.2890],
+      "강원 춘천": [37.8813, 127.7298],
+      "강원 원주": [37.3422, 127.9202],
+      "충북 청주": [36.6424, 127.4890],
+      "충남 천안": [36.8151, 127.1139],
+      "전북 전주": [35.8242, 127.1480],
+      "전남 순천": [34.9506, 127.4872],
+      "경북 포항": [36.0190, 129.3435],
+      "경남 창원": [35.2285, 128.6811],
+      "제주 제주시": [33.4996, 126.5312]
+    };
+
+    // ===== 상태 =====
+    let myUid = null;
+    let myProfile = null;
+    let currentChatId = null;
+    let currentChatTarget = null;
+    let unsubscribeChat = null;
+
+    // ===== 기본 유틸 =====
+    function initRegions() {
+      const regionSelect = document.getElementById("region");
+      const regions = Object.keys(REGION_COORDS).sort((a, b) => a.localeCompare(b, "ko"));
+      regionSelect.innerHTML = regions.map(region => `<option>${region}</option>`).join("");
+    }
+
+    function setAdultDateLimit() {
+      const today = new Date();
+      const limit = new Date(today.getFullYear() - 19, today.getMonth(), today.getDate());
+      const yyyy = limit.getFullYear();
+      const mm = String(limit.getMonth() + 1).padStart(2, "0");
+      const dd = String(limit.getDate()).padStart(2, "0");
+      document.getElementById("birthDate").max = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function calculateAge(birthDate) {
+      const today = new Date();
+      const birth = new Date(birthDate);
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+      return age;
+    }
+
+    function toRad(deg) {
+      return deg * (Math.PI / 180);
+    }
+
+    function getDistanceKm(regionA, regionB) {
+      const a = REGION_COORDS[regionA];
+      const b = REGION_COORDS[regionB];
+      if (!a || !b) return 999;
+
+      const R = 6371;
+      const dLat = toRad(b[0] - a[0]);
+      const dLon = toRad(b[1] - a[1]);
+      const lat1 = toRad(a[0]);
+      const lat2 = toRad(b[0]);
+
+      const h =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+
+      const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+      return Math.round(R * c);
+    }
+
+    function formatTime(ts) {
+      if (!ts || !ts.toDate) return "";
+      const d = ts.toDate();
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function makeChatId(uid1, uid2) {
+      return [uid1, uid2].sort().join("_");
+    }
+
+    // ===== 별자리 =====
+    function getStarSign(dateString) {
+      const d = new Date(dateString);
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+
+      if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "양자리";
+      if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "황소자리";
+      if ((month === 5 && day >= 21) || (month === 6 && day <= 21)) return "쌍둥이자리";
+      if ((month === 6 && day >= 22) || (month === 7 && day <= 22)) return "게자리";
+      if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "사자자리";
+      if ((month === 8 && day >= 23) || (month === 9 && day <= 23)) return "처녀자리";
+      if ((month === 9 && day >= 24) || (month === 10 && day <= 22)) return "천칭자리";
+      if ((month === 10 && day >= 23) || (month === 11 && day <= 22)) return "전갈자리";
+      if ((month === 11 && day >= 23) || (month === 12 && day <= 24)) return "사수자리";
+      if ((month === 12 && day >= 25) || (month === 1 && day <= 19)) return "염소자리";
+      if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) return "물병자리";
+      return "물고기자리";
+    }
+
+    const starMap = {
+      "양자리": ["사자자리", "사수자리"],
+      "황소자리": ["처녀자리", "염소자리"],
+      "쌍둥이자리": ["천칭자리", "물병자리"],
+      "게자리": ["전갈자리", "물고기자리"],
+      "사자자리": ["양자리", "사수자리"],
+      "처녀자리": ["황소자리", "염소자리"],
+      "천칭자리": ["물병자리", "쌍둥이자리"],
+      "전갈자리": ["게자리", "물고기자리"],
+      "사수자리": ["양자리", "사자자리"],
+      "염소자리": ["황소자리", "처녀자리"],
+      "물병자리": ["천칭자리", "쌍둥이자리"],
+      "물고기자리": ["게자리", "전갈자리"]
+    };
+
+    function starScore(a, b) {
+      if (starMap[a] && starMap[a].includes(b)) return 24;
+      if (a === b) return 18;
+      return 10;
+    }
+
+    // ===== MBTI =====
+    const mbtiMap = {
+      "INTJ": ["ENFP", "ENTP"],
+      "INTP": ["ENTJ", "ENFJ"],
+      "ENTJ": ["INTP", "INFP"],
+      "ENTP": ["INFJ", "INTJ"],
+      "INFJ": ["ENFP", "ENTP"],
+      "INFP": ["ENFJ", "ENTJ"],
+      "ENFJ": ["INFP", "ISFP"],
+      "ENFP": ["INFJ", "INTJ"],
+      "ISTJ": ["ESFP", "ESTP"],
+      "ISFJ": ["ESFP", "ESTP"],
+      "ESTJ": ["ISFP", "ISTP"],
+      "ESFJ": ["ISFP", "ISTP"],
+      "ISTP": ["ESFJ", "ESTJ"],
+      "ISFP": ["ENFJ", "ESFJ"],
+      "ESTP": ["ISFJ", "ISTJ"],
+      "ESFP": ["ISFJ", "ISTJ"]
+    };
+
+    function mbtiScore(a, b) {
+      if (mbtiMap[a] && mbtiMap[a].includes(b)) return 30;
+      if (a === b) return 18;
+      return 10;
+    }
+
+    // ===== 사주용 데이터 =====
+    const heavenlyStems = ["갑","을","병","정","무","기","경","신","임","계"];
+    const earthlyBranches = ["자","축","인","묘","진","사","오","미","신","유","술","해"];
+
+    const stemElements = {
+      "갑":"목","을":"목","병":"화","정":"화","무":"토",
+      "기":"토","경":"금","신":"금","임":"수","계":"수"
+    };
+
+    const stemYinYang = {
+      "갑":"양","을":"음","병":"양","정":"음","무":"양",
+      "기":"음","경":"양","신":"음","임":"양","계":"음"
+    };
+
+    const branchElements = {
+      "자":"수","축":"토","인":"목","묘":"목","진":"토","사":"화",
+      "오":"화","미":"토","신":"금","유":"금","술":"토","해":"수"
+    };
+
+    const branchYinYang = {
+      "자":"양","축":"음","인":"양","묘":"음","진":"양","사":"음",
+      "오":"양","미":"음","신":"양","유":"음","술":"양","해":"음"
+    };
+
+    const monthBranchMap = {
+      1:"축", 2:"인", 3:"묘", 4:"진", 5:"사", 6:"오",
+      7:"미", 8:"신", 9:"유", 10:"술", 11:"해", 12:"자"
+    };
+
+    const triHarmony = [
+      ["신","자","진"],
+      ["해","묘","미"],
+      ["인","오","술"],
+      ["사","유","축"]
+    ];
+
+    const directionalHarmony = [
+      ["인","묘","진"],
+      ["사","오","미"],
+      ["신","유","술"],
+      ["해","자","축"]
+    ];
+
+    const sixClash = {
+      "자":"오","축":"미","인":"신","묘":"유","진":"술","사":"해",
+      "오":"자","미":"축","신":"인","유":"묘","술":"진","해":"사"
+    };
+
+    const sixHarm = {
+      "자":"미","축":"오","인":"사","묘":"진","신":"해","유":"술",
+      "미":"자","오":"축","사":"인","진":"묘","해":"신","술":"유"
+    };
+
+    const darkCombine = {
+      "자":"사","축":"인","묘":"신","오":"해","유":"辰","미":"子"
+    };
+
+    const formPenaltyPairs = [
+      ["자","묘"],
+      ["인","사"],
+      ["사","신"],
+      ["신","인"],
+      ["축","술"],
+      ["술","미"],
+      ["미","축"],
+      ["진","진"],
+      ["오","오"],
+      ["유","유"],
+      ["해","해"]
+    ];
+
+    const elementGenerate = {
+      "목":"화",
+      "화":"토",
+      "토":"금",
+      "금":"수",
+      "수":"목"
+    };
+
+    const elementControl = {
+      "목":"토",
+      "토":"수",
+      "수":"화",
+      "화":"금",
+      "금":"목"
+    };
+
+    function getYearStem(dateString) {
+      const y = new Date(dateString).getFullYear();
+      return heavenlyStems[((y - 4) % 10 + 10) % 10];
+    }
+
+    function getYearBranch(dateString) {
+      const y = new Date(dateString).getFullYear();
+      return earthlyBranches[((y - 4) % 12 + 12) % 12];
+    }
+
+    function getMonthBranch(dateString) {
+      const m = new Date(dateString).getMonth() + 1;
+      return monthBranchMap[m];
+    }
+
+    function getMonthStem(dateString) {
+      const yStemIndex = ((new Date(dateString).getFullYear() - 4) % 10 + 10) % 10;
+      const m = new Date(dateString).getMonth() + 1;
+      return heavenlyStems[(yStemIndex * 2 + m) % 10];
+    }
+
+    function getDayStem(dateString) {
+      const d = new Date(dateString);
+      const base = new Date("1990-01-01T00:00:00");
+      const diff = Math.floor((d - base) / (1000 * 60 * 60 * 24));
+      return heavenlyStems[((diff % 10) + 10) % 10];
+    }
+
+    function getDayBranch(dateString) {
+      const d = new Date(dateString);
+      const base = new Date("1990-01-01T00:00:00");
+      const diff = Math.floor((d - base) / (1000 * 60 * 60 * 24));
+      return earthlyBranches[((diff % 12) + 12) % 12];
+    }
+
+    function getHourBranch(timeString) {
+      const hour = parseInt(timeString.split(":")[0], 10);
+      if (hour >= 23 || hour < 1) return "자";
+      if (hour < 3) return "축";
+      if (hour < 5) return "인";
+      if (hour < 7) return "묘";
+      if (hour < 9) return "진";
+      if (hour < 11) return "사";
+      if (hour < 13) return "오";
+      if (hour < 15) return "미";
+      if (hour < 17) return "신";
+      if (hour < 19) return "유";
+      if (hour < 21) return "술";
+      return "해";
+    }
+
+    function getHourStem(dateString, timeString) {
+      const dayStemIndex = heavenlyStems.indexOf(getDayStem(dateString));
+      const hourBranchIndex = earthlyBranches.indexOf(getHourBranch(timeString));
+      return heavenlyStems[(dayStemIndex * 2 + hourBranchIndex) % 10];
+    }
+
+    function get20YearBucket(dateString) {
+      const year = new Date(dateString).getFullYear();
+      return Math.floor(year / 20);
+    }
+
+    function pairInList(a, b, list) {
+      return list.some(group => group.includes(a) && group.includes(b));
+    }
+
+    function isPenalty(a, b) {
+      return formPenaltyPairs.some(pair =>
+        (pair[0] === a && pair[1] === b) || (pair[0] === b && pair[1] === a)
+      );
+    }
+
+    function branchCompatibilityScore(a, b) {
+      let score = 10;
+
+      if (a === b) score += 8;
+      if (pairInList(a, b, triHarmony)) score += 14;
+      if (pairInList(a, b, directionalHarmony)) score += 10;
+      if (darkCombine[a] === b || darkCombine[b] === a) score += 6;
+
+      if (sixClash[a] === b) score -= 14;
+      if (sixHarm[a] === b) score -= 8;
+      if (isPenalty(a, b)) score -= 6;
+
+      return Math.max(0, score);
+    }
+
+    function stemCompatibilityScore(a, b) {
+      const ea = stemElements[a];
+      const eb = stemElements[b];
+      const ya = stemYinYang[a];
+      const yb = stemYinYang[b];
+
+      let score = 10;
+
+      if (a === b) score += 5;
+      if (elementGenerate[ea] === eb || elementGenerate[eb] === ea) score += 10;
+      if (elementControl[ea] === eb || elementControl[eb] === ea) score -= 6;
+      if (ya !== yb) score += 3;
+
+      return Math.max(0, score);
+    }
+
+    function elementSupportScore(aElements, bElements) {
+      let score = 0;
+
+      for (const ea of aElements) {
+        for (const eb of bElements) {
+          if (elementGenerate[ea] === eb) score += 2;
+          if (elementGenerate[eb] === ea) score += 2;
+          if (elementControl[ea] === eb) score -= 1;
+          if (elementControl[eb] === ea) score -= 1;
+        }
+      }
+
+      return Math.max(0, Math.min(20, score + 8));
+    }
+
+    function yinYangBalanceScore(aList, bList) {
+      const aYang = aList.filter(v => v === "양").length;
+      const aYin = aList.filter(v => v === "음").length;
+      const bYang = bList.filter(v => v === "양").length;
+      const bYin = bList.filter(v => v === "음").length;
+
+      const totalYang = aYang + bYang;
+      const totalYin = aYin + bYin;
+      const diff = Math.abs(totalYang - totalYin);
+
+      if (diff === 0) return 12;
+      if (diff === 1) return 10;
+      if (diff === 2) return 8;
+      return 5;
+    }
+
+    function twentyYearScore(aDate, bDate) {
+      const a = get20YearBucket(aDate);
+      const b = get20YearBucket(bDate);
+      const diff = Math.abs(a - b);
+
+      if (diff === 0) return 12;
+      if (diff === 1) return 9;
+      if (diff === 2) return 6;
+      return 3;
+    }
+
+    function buildSajuData(profile) {
+      const yearStem = getYearStem(profile.birthDate);
+      const yearBranch = getYearBranch(profile.birthDate);
+      const monthStem = getMonthStem(profile.birthDate);
+      const monthBranch = getMonthBranch(profile.birthDate);
+      const dayStem = getDayStem(profile.birthDate);
+      const dayBranch = getDayBranch(profile.birthDate);
+      const hourStem = getHourStem(profile.birthDate, profile.birthTime);
+      const hourBranch = getHourBranch(profile.birthTime);
+
+      const stems = [yearStem, monthStem, dayStem, hourStem];
+      const branches = [yearBranch, monthBranch, dayBranch, hourBranch];
+
+      const elements = [
+        stemElements[yearStem], stemElements[monthStem], stemElements[dayStem], stemElements[hourStem],
+        branchElements[yearBranch], branchElements[monthBranch], branchElements[dayBranch], branchElements[hourBranch]
+      ];
+
+      const yinYangs = [
+        stemYinYang[yearStem], stemYinYang[monthStem], stemYinYang[dayStem], stemYinYang[hourStem],
+        branchYinYang[yearBranch], branchYinYang[monthBranch], branchYinYang[dayBranch], branchYinYang[hourBranch]
+      ];
+
+      return {
+        yearStem, yearBranch,
+        monthStem, monthBranch,
+        dayStem, dayBranch,
+        hourStem, hourBranch,
+        stems, branches, elements, yinYangs
+      };
+    }
+
+    function sajuCompatibility(profileA, profileB) {
+      const a = buildSajuData(profileA);
+      const b = buildSajuData(profileB);
+
+      const year = branchCompatibilityScore(a.yearBranch, b.yearBranch) + stemCompatibilityScore(a.yearStem, b.yearStem);
+      const month = branchCompatibilityScore(a.monthBranch, b.monthBranch) + stemCompatibilityScore(a.monthStem, b.monthStem);
+      const day = branchCompatibilityScore(a.dayBranch, b.dayBranch) + stemCompatibilityScore(a.dayStem, b.dayStem);
+      const hour = branchCompatibilityScore(a.hourBranch, b.hourBranch) + stemCompatibilityScore(a.hourStem, b.hourStem);
+
+      const fiveElements = elementSupportScore(a.elements, b.elements);
+      const yinYang = yinYangBalanceScore(a.yinYangs, b.yinYangs);
+      const twenty = twentyYearScore(profileA.birthDate, profileB.birthDate);
+
+      const total = year + month + day + hour + fiveElements + yinYang + twenty;
+
+      return {
+        year,
+        month,
+        day,
+        hour,
+        fiveElements,
+        yinYang,
+        twenty,
+        total
+      };
+    }
+
+    // ===== 거리/나이/성별 =====
+    function distanceScore(km) {
+      if (km <= 5) return 20;
+      if (km <= 10) return 17;
+      if (km <= 20) return 14;
+      if (km <= 50) return 10;
+      if (km <= 100) return 6;
+      if (km <= 300) return 3;
+      return 0;
+    }
+
+    function ageGapScore(aAge, bAge) {
+      const gap = Math.abs(aAge - bAge);
+      if (gap <= 2) return 12;
+      if (gap <= 5) return 10;
+      if (gap <= 8) return 8;
+      if (gap <= 12) return 5;
+      if (gap <= 15) return 2;
+      return 0;
+    }
+
+    function totalScore(userA, userB, realDistance) {
+      const star = starScore(getStarSign(userA.birthDate), getStarSign(userB.birthDate));
+      const mbti = mbtiScore(userA.mbti, userB.mbti);
+      const saju = sajuCompatibility(userA, userB);
+      const distance = distanceScore(realDistance);
+      const ageGap = ageGapScore(userA.age, userB.age);
+
+      const total = star + mbti + saju.total + distance + ageGap;
+
+      return {
+        star,
+        mbti,
+        saju,
+        distance,
+        ageGap,
+        total
+      };
+    }
+
+    function getGrade(score) {
+      if (score >= 95) return 1;
+      if (score >= 70) return 2;
+      if (score >= 45) return 3;
+      return 0;
+    }
+
+    function getGradeLabel(grade) {
+      if (grade === 1) return "1등급 · 아주 잘 맞음";
+      if (grade === 2) return "2등급 · 잘 맞음";
+      if (grade === 3) return "3등급 · 대화해볼 만함";
+      return "제외";
+    }
+
+    function renderMyProfile(profile) {
+      const sign = getStarSign(profile.birthDate);
+      const saju = buildSajuData(profile);
+
+      document.getElementById("myProfileBox").innerHTML = `
+        <span class="tag">UID ${profile.uid.slice(0, 8)}</span>
+        <span class="tag">성별 ${profile.gender === "male" ? "남성" : "여성"}</span>
+        <span class="tag">나이 ${profile.age}세</span>
+        <span class="tag">MBTI ${profile.mbti}</span>
+        <span class="tag">별자리 ${sign}</span>
+        <span class="tag">지역 ${profile.region}</span>
+        <span class="tag">최대거리 ${profile.distanceLimit}km</span>
+        <div class="small" style="margin-top:8px;">
+          사주: ${saju.yearStem}${saju.yearBranch} / ${saju.monthStem}${saju.monthBranch} / ${saju.dayStem}${saju.dayBranch} / ${saju.hourStem}${saju.hourBranch}
+        </div>
+      `;
+    }
+
+    // ===== Firebase 기능 =====
+    window.login = async function () {
+      try {
+        const user = await signInAnonymously(auth);
+        myUid = user.user.uid;
+        document.getElementById("authStatus").innerHTML = `<span class="success">로그인 성공</span><br>UID: ${myUid}`;
+        alert("로그인 성공");
+      } catch (e) {
+        document.getElementById("authStatus").innerHTML = `<span class="danger">로그인 실패</span><br>${e.message}`;
+        alert("로그인 실패: " + e.message);
+        console.error(e);
+      }
+    };
+
+    window.saveProfile = async function () {
+      try {
+        if (!myUid) {
+          alert("로그인 먼저 하세요");
+          return;
+        }
+
+        const gender = document.getElementById("gender").value;
+        const birthDate = document.getElementById("birthDate").value;
+        const birthTime = document.getElementById("birthTime").value;
+        const mbti = document.getElementById("mbti").value;
+        const region = document.getElementById("region").value;
+        const distanceLimit = parseInt(document.getElementById("distanceLimit").value, 10);
+
+        if (!birthDate || !birthTime) {
+          alert("생년월일과 태어난 시간을 입력하세요");
+          return;
+        }
+
+        const age = calculateAge(birthDate);
+        if (age < 19) {
+          alert("미성년자는 이용할 수 없습니다");
+          return;
+        }
+
+        const profile = {
+          uid: myUid,
+          gender,
+          birthDate,
+          birthTime,
+          mbti,
+          region,
+          distanceLimit,
+          age,
+          trust: 80,
+          createdAt: serverTimestamp()
+        };
+
+        await setDoc(doc(db, "users", myUid), profile);
+        document.getElementById("saveStatus").innerHTML = `<span class="success">저장 완료</span>`;
+        const saved = await getDoc(doc(db, "users", myUid));
+        myProfile = saved.data();
+        renderMyProfile(myProfile);
+      } catch (e) {
+        document.getElementById("saveStatus").innerHTML = `<span class="danger">저장 실패</span><br>${e.message}`;
+        console.error(e);
+      }
+    };
+
+    window.loadMatches = async function () {
+      try {
+        if (!myUid) {
+          alert("로그인 먼저 하세요");
+          return;
+        }
+
+        const mySnap = await getDoc(doc(db, "users", myUid));
+        if (!mySnap.exists()) {
+          alert("먼저 내 정보를 저장하세요");
+          return;
+        }
+
+        myProfile = mySnap.data();
+        renderMyProfile(myProfile);
+
+        const snapshot = await getDocs(collection(db, "users"));
+        const matchList = document.getElementById("matchList");
+        matchList.innerHTML = "";
+
+        let results = [];
+
+        snapshot.forEach(docSnap => {
+          const user = docSnap.data();
+          if (user.uid === myUid) return;
+
+          // 성별이 같으면 일단 제외 (현재 버전 기준)
+          if (user.gender === myProfile.gender) return;
+
+          const ageGap = Math.abs(myProfile.age - user.age);
+          if (ageGap > 15) return;
+
+          const realDistance = getDistanceKm(myProfile.region, user.region);
+          if (realDistance > myProfile.distanceLimit) return;
+
+          const scoreData = totalScore(myProfile, user, realDistance);
+          const grade = getGrade(scoreData.total);
+          if (grade === 0) return;
+
+          results.push({
+            user,
+            realDistance,
+            scoreData,
+            grade
+          });
+        });
+
+        results.sort((a, b) => b.scoreData.total - a.scoreData.total);
+
+        if (results.length === 0) {
+          document.getElementById("matchInfo").innerHTML =
+            `<span class="danger">조건에 맞는 매칭이 없습니다. 다른 브라우저 창에서 이성과 다른 지역/시간/MBTI로 프로필을 더 저장해보세요.</span>`;
+          return;
+        }
+
+        document.getElementById("matchInfo").innerHTML =
+          `<span class="success">${results.length}명의 매칭을 찾았습니다</span>`;
+
+        results.forEach(({ user, realDistance, scoreData, grade }) => {
+          const card = document.createElement("div");
+          card.className = `card grade${grade}`;
+
+          const saju = scoreData.saju;
+          const sign = getStarSign(user.birthDate);
+
+          card.innerHTML = `
+            <h3>${user.uid.slice(0, 8)}님</h3>
+            <div class="tag">${user.gender === "male" ? "남성" : "여성"}</div>
+            <div class="tag">${user.age}세</div>
+            <div class="tag">MBTI ${user.mbti}</div>
+            <div class="tag">${sign}</div>
+            <div class="tag">${user.region}</div>
+            <div class="tag">${realDistance}km</div>
+
+            <div class="score">${getGradeLabel(grade)} / ${scoreData.total}점 ❤️</div>
+
+            <div class="small">
+              MBTI ${scoreData.mbti}점 /
+              별자리 ${scoreData.star}점 /
+              거리 ${scoreData.distance}점 /
+              나이차 ${scoreData.ageGap}점<br>
+              사주 총합 ${saju.total}점
+              (년 ${saju.year} / 월 ${saju.month} / 일 ${saju.day} / 시 ${saju.hour} /
+              오행 ${saju.fiveElements} / 음양 ${saju.yinYang} / 20년구간 ${saju.twenty})
+            </div>
+
+            <button onclick="openChat('${user.uid}', '${user.uid.slice(0, 8)}', '${user.region}')">채팅하기</button>
+          `;
+          matchList.appendChild(card);
+        });
+      } catch (e) {
+        document.getElementById("matchInfo").innerHTML = `<span class="danger">불러오기 실패</span><br>${e.message}`;
+        console.error(e);
+      }
+    };
+
+    // ===== 채팅 =====
+    window.openChat = async function(targetUid, shortName, region) {
+      if (!myUid) {
+        alert("로그인 먼저 하세요");
+        return;
+      }
+
+      currentChatTarget = { uid: targetUid, shortName, region };
+      currentChatId = makeChatId(myUid, targetUid);
+
+      document.getElementById("chatSection").classList.remove("hidden");
+      document.getElementById("chatTitle").textContent = `${shortName}님과의 채팅`;
+      document.getElementById("chatSubTitle").textContent = `${region} · 실시간 채팅`;
+
+      if (unsubscribeChat) {
+        unsubscribeChat();
+        unsubscribeChat = null;
+      }
+
+      const q = query(
+        collection(db, "chats", currentChatId, "messages"),
+        orderBy("createdAt", "asc")
+      );
+
+      unsubscribeChat = onSnapshot(q, (snapshot) => {
+        const box = document.getElementById("messages");
+        box.innerHTML = "";
+
+        if (snapshot.empty) {
+          box.innerHTML = `<div class="msg">아직 메시지가 없습니다.</div>`;
+          return;
+        }
+
+        snapshot.forEach(docSnap => {
+          const msg = docSnap.data();
+          const mine = msg.senderId === myUid;
+
+          const div = document.createElement("div");
+          div.className = mine ? "msg mine" : "msg";
+          div.innerHTML = `
+            <div class="msg-meta">${mine ? "나" : shortName} · ${formatTime(msg.createdAt)}</div>
+            <div>${msg.text || ""}</div>
+          `;
+          box.appendChild(div);
+        });
+
+        box.scrollTop = box.scrollHeight;
+      });
+    };
+
+    window.sendMessage = async function () {
+      try {
+        if (!myUid || !currentChatId || !currentChatTarget) {
+          alert("먼저 채팅방을 여세요");
+          return;
+        }
+
+        const input = document.getElementById("msgInput");
+        const text = input.value.trim();
+        if (!text) return;
+
+        await addDoc(collection(db, "chats", currentChatId, "messages"), {
+          senderId: myUid,
+          text,
+          createdAt: serverTimestamp()
+        });
+
+        input.value = "";
+      } catch (e) {
+        alert("메시지 전송 실패: " + e.message);
+        console.error(e);
+      }
+    };
+
+    window.closeChat = function () {
+      document.getElementById("chatSection").classList.add("hidden");
+      document.getElementById("messages").innerHTML = "";
+      document.getElementById("msgInput").value = "";
+      if (unsubscribeChat) {
+        unsubscribeChat();
+        unsubscribeChat = null;
+      }
+      currentChatId = null;
+      currentChatTarget = null;
+    };
+
+    initRegions();
+    setAdultDateLimit();
+  </script>
+</body>
+</html>
