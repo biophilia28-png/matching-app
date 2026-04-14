@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>궁합 매칭 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<h1>💘 궁합 매칭 앱 테스트</h1>
+
+<button onclick="login()">Firebase 로그인</button>
+<button onclick="saveProfile()">내 정보 저장</button>
+<button onclick="loadUsers()">매칭 보기</button>
+
+<hr>
+
+<div id="output"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* 🔥 여기 네 Firebase 값 넣어야함 */
+const firebaseConfig = {
+  apiKey: "여기에입력",
+  authDomain: "여기에입력",
+  projectId: "여기에입력",
+  storageBucket: "여기에입력",
+  messagingSenderId: "여기에입력",
+  appId: "여기에입력"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let myUid = null;
+
+window.login = async function () {
+  const user = await signInAnonymously(auth);
+  myUid = user.user.uid;
+  alert("로그인 완료: " + myUid);
+};
+
+window.saveProfile = async function () {
+  if (!myUid) return alert("로그인 먼저");
+
+  await setDoc(doc(db, "users", myUid), {
+    uid: myUid,
+    age: 30,
+    mbti: "INTJ",
+    region: "서울 강남",
+    trust: 80
+  });
+
+  alert("저장 완료");
+};
+
+window.loadUsers = async function () {
+  const snapshot = await getDocs(collection(db, "users"));
+  let html = "";
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    html += `
+      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+        <b>${d.uid}</b><br>
+        나이: ${d.age}<br>
+        MBTI: ${d.mbti}<br>
+        지역: ${d.region}<br>
+        신뢰도: ${d.trust}
+      </div>
+    `;
+  });
+
+  document.getElementById("output").innerHTML = html;
+};
+</script>
+
+</body>
+</html>
