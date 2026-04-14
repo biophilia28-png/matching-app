@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ff4d6d" />
+  <title>성인 전용 매칭 앱</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --sub: #6b7280;
+      --line: #e5e7eb;
+      --primary: #ff4d6d;
+      --primary-dark: #e63b5c;
+      --soft: #fff1f4;
+      --warn: #fff5da;
+      --ok: #16a34a;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: Arial, sans-serif; }
+    body { min-height: 100vh; }
+    a { color: #7c3aed; text-decoration: underline; }
+    button, input, select, textarea { font: inherit; }
+
+    .app {
+      width: 100%;
+      max-width: 540px;
+      margin: 0 auto;
+      padding: 14px 14px 40px;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .notice {
+      background: var(--warn);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      color: var(--sub);
+      font-size: 14px;
+      margin: 0 0 14px;
+      line-height: 1.6;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    .grid { display: grid; gap: 10px; }
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--sub);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none;
+    }
+
+    textarea { min-height: 96px; resize: vertical; }
+
+    .helper {
+      font-size: 12px;
+      color: var(--sub);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .error {
+      color: #dc2626;
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .btn {
+      width: 100%;
+      min-height: 50px;
+      border: 0;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .list-links p { margin: 10px 0; }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(17,24,39,.55);
+      z-index: 20;
+      padding: 20px 12px;
+      overflow: auto;
+    }
+
+    .modal.show { display: block; }
+
+    .modal-box {
+      max-width: 560px;
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .modal-box h3 { margin-top: 0; }
+    .modal-box .body { color: #374151; line-height: 1.7; font-size: 14px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      background: var(--soft);
+      color: var(--primary-dark);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    .profile-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd6df, #ffc2d1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #7a1028;
+      flex-shrink: 0;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .menu-btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      text-align: left;
+      min-height: 92px;
+      cursor: pointer;
+    }
+
+    .menu-btn b {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .chat-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: calc(100vh - 170px);
+      min-height: 420px;
+    }
+
+    .messages {
+      flex: 1;
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      border: 1px solid #f0f0f0;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .msg.me {
+      margin-left: auto;
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg.other {
+      background: #f3f4f6;
+      color: #111827;
+      border-bottom-left-radius: 6px;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .tabbar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(246,247,251,.96);
+      backdrop-filter: blur(10px);
+      padding-top: 6px;
+    }
+
+    .tabbar-inner {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .success {
+      color: var(--ok);
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- 가입 화면 -->
+    <section id="signupScreen" class="screen active">
+      <div class="card notice">
+        본 서비스는 만 19세 이상만 이용 가능합니다.<br>
+        본인인증 또는 성인인증이 필요할 수 있습니다.<br>
+        채팅 내용은 자동 삭제될 수 있습니다.<br>
+        신고 및 차단 기능이 제공됩니다.<br>
+        첫 만남은 공공장소 이용을 권장합니다.
+      </div>
+
+      <div class="card">
+        <h1 class="title">가입 정보 입력</h1>
+        <p class="subtitle">미성년자 선택이 나오지 않도록 성인 출생연도만 선택 가능하게 제한했습니다. 생년월일과 시간을 모두 입력한 뒤 다음으로 이동합니다.</p>
+
+        <div class="grid">
+          <div>
+            <label for="nickname">닉네임</label>
+            <input id="nickname" type="text" placeholder="예: 서울밤산책" maxlength="20" />
+          </div>
+
+          <div>
+            <label>생년월일</label>
+            <div class="grid grid-3">
+              <select id="year"></select>
+              <select id="month"></select>
+              <select id="day"></select>
+            </div>
+          </div>
+
+          <div>
+            <label>출생 시간</label>
+            <div class="grid grid-2">
+              <select id="hour"></select>
+              <select id="minute"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="helper">현재 날짜 기준 만 19세 이상만 통과됩니다. 연도 선택 목록도 성인 가능한 연도까지만 표시됩니다.</div>
+        <div id="signupError" class="error"></div>
+        <div id="signupSuccess" class="success">가입 정보가 저장되었습니다.</div>
+
+        <div style="margin-top:14px;">
+          <button class="btn" id="nextBtn">다음</button>
+        </div>
+      </div>
+
+      <div class="card list-links">
+        <h3 class="section-title">안내</h3>
+        <p><a href="#" data-modal="privacy">개인정보처리방침</a></p>
+        <p><a href="#" data-modal="terms">이용약관</a></p>
+        <p><a href="#" data-modal="report">신고/차단 정책</a></p>
+        <p><a href="#" data-modal="minor">미성년자 이용 불가</a></p>
+      </div>
+    </section>
+
+    <!-- 메인 화면 -->
+    <section id="mainScreen" class="screen">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size:24px; margin-bottom:4px;">메인 화면</div>
+          <div class="small">가입 후 첫 화면입니다.</div>
+        </div>
+        <div class="badge">성인 인증 안내</div>
+      </div>
+
+      <div class="card">
+        <div class="profile-box">
+          <div class="avatar" id="profileAvatar">성인</div>
+          <div>
+            <div style="font-size:18px; font-weight:700;" id="profileName">사용자</div>
+            <div class="small" id="profileBirthInfo">생년월일 정보 없음</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">빠른 메뉴</h3>
+        <div class="menu-grid">
+          <button class="menu-btn" id="openChatBtn">
+            <b>채팅 시작</b>
+            <span class="small">기본 채팅 기능이 동작합니다.</span>
+          </button>
+          <button class="menu-btn" id="saveProfileBtn">
+            <b>회원정보 저장</b>
+            <span class="small">브라우저 저장소에 가입 정보를 저장합니다.</span>
+          </button>
+          <button class="menu-btn" id="pwaGuideBtn">
+            <b>PWA 설치 안내</b>
+            <span class="small">홈 화면 추가로 앱처럼 사용할 수 있습니다.</span>
+          </button>
+          <button class="menu-btn" id="serverGuideBtn">
+            <b>서버 연결 안내</b>
+            <span class="small">실서버 연결 방식과 다음 단계 안내</span>
+          </button>
+        </div>
+        <div id="installMsg" class="helper" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tabbar-inner">
+          <button class="btn secondary" id="goSignupBtn">가입정보</button>
+          <button class="btn" id="goChatBtn">채팅</button>
+          <button class="btn secondary" id="logoutBtn">초기화</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 채팅 화면 -->
+    <section id="chatScreen" class="screen">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size:22px; margin-bottom:4px;">채팅</div>
+          <div class="small">기본 1:1 채팅 UI입니다. 새로고침해도 보존됩니다.</div>
+        </div>
+        <button class="btn secondary" style="width:auto; min-height:42px; padding:0 14px;" id="backMainBtn">메인</button>
+      </div>
+
+      <div class="chat-wrap">
+        <div class="messages" id="messages"></div>
+        <div class="composer">
+          <input id="chatInput" type="text" placeholder="메시지를 입력하세요" maxlength="300" />
+          <button class="btn" id="sendBtn" style="width:96px;">보내기</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn secondary" id="clearChatBtn">채팅 삭제</button>
+          <button class="btn secondary" id="autoReplyBtn">상대 답장 테스트</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 모달 -->
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <h3 id="modalTitle"></h3>
+      <div class="body" id="modalBody"></div>
+      <div style="margin-top:14px;">
+        <button class="btn" id="closeModalBtn">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const APP_STORAGE_KEY = 'adult_matching_app_profile_v2';
+    const CHAT_STORAGE_KEY = 'adult_matching_app_chat_v1';
+    const signupScreen = document.getElementById('signupScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    const chatScreen = document.getElementById('chatScreen');
+    const yearEl = document.getElementById('year');
+    const monthEl = document.getElementById('month');
+    const dayEl = document.getElementById('day');
+    const hourEl = document.getElementById('hour');
+    const minuteEl = document.getElementById('minute');
+    const nicknameEl = document.getElementById('nickname');
+    const signupError = document.getElementById('signupError');
+    const signupSuccess = document.getElementById('signupSuccess');
+    const messagesEl = document.getElementById('messages');
+    const chatInput = document.getElementById('chatInput');
+    const installMsg = document.getElementById('installMsg');
+
+    let deferredPrompt = null;
+
+    function showScreen(screen) {
+      [signupScreen, mainScreen, chatScreen].forEach(el => el.classList.remove('active'));
+      screen.classList.add('active');
+    }
+
+    function pad(num) {
+      return String(num).padStart(2, '0');
+    }
+
+    function getAdultLatestYear() {
+      const now = new Date();
+      return now.getFullYear() - 19;
+    }
+
+    function populateDateFields() {
+      const now = new Date();
+      const latestAdultYear = getAdultLatestYear();
+
+      yearEl.innerHTML = '';
+      for (let y = latestAdultYear; y >= 1900; y--) {
+        yearEl.innerHTML += `<option value="${y}">${y}년</option>`;
+      }
+
+      monthEl.innerHTML = '';
+      for (let m = 1; m <= 12; m++) {
+        monthEl.innerHTML += `<option value="${m}">${m}월</option>`;
+      }
+
+      hourEl.innerHTML = '';
+      for (let h = 0; h <= 23; h++) {
+        hourEl.innerHTML += `<option value="${h}">${pad(h)}시</option>`;
+      }
+
+      minuteEl.innerHTML = '';
+      for (let min = 0; min <= 59; min++) {
+        minuteEl.innerHTML += `<option value="${min}">${pad(min)}분</option>`;
+      }
+
+      yearEl.value = String(Math.min(1990, latestAdultYear));
+      monthEl.value = '1';
+      updateDays();
+      dayEl.value = '1';
+      hourEl.value = '12';
+      minuteEl.value = '0';
+    }
+
+    function updateDays() {
+      const y = Number(yearEl.value);
+      const m = Number(monthEl.value);
+      const daysInMonth = new Date(y, m, 0).getDate();
+      const currentDay = Number(dayEl.value || 1);
+      dayEl.innerHTML = '';
+      for (let d = 1; d <= daysInMonth; d++) {
+        dayEl.innerHTML += `<option value="${d}">${d}일</option>`;
+      }
+      dayEl.value = String(Math.min(currentDay, daysInMonth));
+    }
+
+    yearEl.addEventListener('change', updateDays);
+    monthEl.addEventListener('change', updateDays);
+
+    function calculateAge(year, month, day) {
+      const today = new Date();
+      let age = today.getFullYear() - year;
+      const birthdayThisYear = new Date(today.getFullYear(), month - 1, day);
+      if (today < birthdayThisYear) age -= 1;
+      return age;
+    }
+
+    function saveProfile(profile) {
+      localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(profile));
+    }
+
+    function loadProfile() {
+      const raw = localStorage.getItem(APP_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }
+
+    function renderProfile(profile) {
+      document.getElementById('profileName').textContent = profile.nickname;
+      document.getElementById('profileAvatar').textContent = profile.nickname.slice(0, 2);
+      document.getElementById('profileBirthInfo').textContent = `${profile.year}년 ${profile.month}월 ${profile.day}일 ${pad(profile.hour)}:${pad(profile.minute)} 출생 · 만 ${profile.age}세`;
+    }
+
+    function goNextPage() {
+      signupError.style.display = 'none';
+      signupSuccess.style.display = 'none';
+
+      const nickname = nicknameEl.value.trim();
+      const year = Number(yearEl.value);
+      const month = Number(monthEl.value);
+      const day = Number(dayEl.value);
+      const hour = Number(hourEl.value);
+      const minute = Number(minuteEl.value);
+
+      if (!nickname) {
+        signupError.textContent = '닉네임을 입력해주세요.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      const birth = new Date(year, month - 1, day, hour, minute);
+      if (Number.isNaN(birth.getTime())) {
+        signupError.textContent = '올바른 생년월일/시간을 입력해주세요.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      const age = calculateAge(year, month, day);
+      if (age < 19) {
+        signupError.textContent = '만 19세 이상만 이용 가능합니다.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      const profile = { nickname, year, month, day, hour, minute, age, createdAt: new Date().toISOString() };
+      saveProfile(profile);
+      signupSuccess.style.display = 'block';
+      renderProfile(profile);
+
+      // 다음 페이지가 실제로 바뀌도록 메인 화면으로 이동
+      showScreen(mainScreen);
+    }
+
+    document.getElementById('nextBtn').addEventListener('click', goNextPage);
+
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalMap = {
+      privacy: {
+        title: '개인정보처리방침',
+        body: `본 서비스는 서비스 제공, 본인 확인, 신고 처리, 안전한 이용 환경 제공을 위해 필요한 최소한의 정보만 수집합니다.<br><br>
+        1. 수집 항목: 닉네임, 생년월일, 접속 기록, 신고 내역<br>
+        2. 이용 목적: 성인 이용 제한 확인, 회원 관리, 안전 정책 운영<br>
+        3. 보관 기간: 회원 탈퇴 또는 목적 달성 후 지체 없이 삭제. 법령상 보관 의무가 있는 경우 예외 적용<br>
+        4. 제3자 제공: 법령에 근거한 경우를 제외하고 동의 없이 제공하지 않음<br>
+        5. 이용자 권리: 열람, 정정, 삭제, 탈퇴 요청 가능`
+      },
+      terms: {
+        title: '이용약관',
+        body: `1. 본 서비스는 만 19세 이상 성인만 이용할 수 있습니다.<br>
+        2. 타인을 사칭하거나 허위 정보를 입력할 수 없습니다.<br>
+        3. 불법 촬영물, 성희롱, 사기, 스팸, 욕설, 협박 행위는 금지됩니다.<br>
+        4. 운영정책 위반 시 경고 없이 이용 제한 또는 영구 정지될 수 있습니다.<br>
+        5. 서비스 개선을 위해 화면, 기능, 정책은 변경될 수 있습니다.`
+      },
+      report: {
+        title: '신고 / 차단 정책',
+        body: `1. 상대방의 부적절한 언행, 금전 요구, 성희롱, 사칭, 광고, 협박은 즉시 신고할 수 있습니다.<br>
+        2. 차단 시 해당 사용자는 더 이상 메시지를 보낼 수 없습니다.<br>
+        3. 신고 접수 시 운영 검토 후 채팅 제한, 계정 정지, 영구 차단 조치가 가능할 수 있습니다.<br>
+        4. 긴급한 위험이 있는 경우 가까운 경찰서나 관련 기관에 즉시 도움을 요청하세요.`
+      },
+      minor: {
+        title: '미성년자 이용 불가',
+        body: `본 서비스는 성인 전용 서비스입니다.<br><br>
+        미성년자의 가입 및 이용은 금지되며, 확인 시 계정은 즉시 제한될 수 있습니다. 허위 생년월일 입력이 확인되면 서비스 이용이 중단될 수 있습니다.`
+      }
+    };
+
+    document.querySelectorAll('[data-modal]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const key = link.getAttribute('data-modal');
+        modalTitle.innerHTML = modalMap[key].title;
+        modalBody.innerHTML = modalMap[key].body;
+        modal.classList.add('show');
+      });
+    });
+
+    document.getElementById('closeModalBtn').addEventListener('click', () => modal.classList.remove('show'));
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.remove('show');
+    });
+
+    // 메인 화면 기능
+    document.getElementById('openChatBtn').addEventListener('click', () => showScreen(chatScreen));
+    document.getElementById('goChatBtn').addEventListener('click', () => showScreen(chatScreen));
+    document.getElementById('backMainBtn').addEventListener('click', () => showScreen(mainScreen));
+    document.getElementById('goSignupBtn').addEventListener('click', () => showScreen(signupScreen));
+
+    document.getElementById('saveProfileBtn').addEventListener('click', () => {
+      const profile = loadProfile();
+      if (!profile) {
+        installMsg.textContent = '먼저 가입 정보를 입력해주세요.';
+        return;
+      }
+      saveProfile(profile);
+      installMsg.textContent = '회원가입 정보가 브라우저 저장소에 저장되었습니다.';
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      if (!confirm('저장된 가입 정보와 채팅을 초기화할까요?')) return;
+      localStorage.removeItem(APP_STORAGE_KEY);
+      localStorage.removeItem(CHAT_STORAGE_KEY);
+      nicknameEl.value = '';
+      populateDateFields();
+      renderMessages();
+      installMsg.textContent = '초기화되었습니다.';
+      showScreen(signupScreen);
+    });
+
+    // 채팅 기능
+    function loadMessages() {
+      const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [
+        { role: 'other', text: '안녕하세요. 안전한 대화를 위해 개인정보는 조심해서 공유해주세요.' }
+      ];
+    }
+
+    function saveMessages(messages) {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    }
+
+    function renderMessages() {
+      const messages = loadMessages();
+      messagesEl.innerHTML = '';
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = `msg ${msg.role}`;
+        div.textContent = msg.text;
+        messagesEl.appendChild(div);
+      });
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function sendMessage(text, role = 'me') {
+      const messages = loadMessages();
+      messages.push({ role, text });
+      saveMessages(messages);
+      renderMessages();
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      sendMessage(text, 'me');
+      chatInput.value = '';
+      setTimeout(() => {
+        const replies = [
+          '반가워요. 오늘 하루는 어떠셨어요?',
+          '대화하기 전에 서로 예의를 지켜요 :)',
+          '안전한 만남을 위해 처음엔 공공장소가 좋아요.',
+          '좋네요. 취미가 어떻게 되세요?'
+        ];
+        const reply = replies[Math.floor(Math.random() * replies.length)];
+        sendMessage(reply, 'other');
+      }, 500);
+    });
+
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('sendBtn').click();
+    });
+
+    document.getElementById('clearChatBtn').addEventListener('click', () => {
+      localStorage.removeItem(CHAT_STORAGE_KEY);
+      renderMessages();
+    });
+
+    document.getElementById('autoReplyBtn').addEventListener('click', () => {
+      sendMessage('테스트용 자동 답장이 도착했습니다.', 'other');
+    });
+
+    // PWA 설치 안내
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installMsg.textContent = '이 기기에서는 홈 화면 추가 또는 설치가 가능합니다.';
+    });
+
+    document.getElementById('pwaGuideBtn').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        installMsg.textContent = '설치 요청이 실행되었습니다.';
+      } else {
+        installMsg.innerHTML = '배포 후 브라우저 메뉴에서 <b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 눌러 사용하세요. Vercel/Netlify 같은 HTTPS 환경에서 더 잘 동작합니다.';
+      }
+    });
+
+    // 서비스워커 동적 등록
+    async function registerServiceWorker() {
+      if (!('serviceWorker' in navigator)) return;
+      const swCode = `
+        const CACHE = 'adult-match-cache-v1';
+        self.addEventListener('install', e => {
+          self.skipWaiting();
+          e.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./'])));
+        });
+        self.addEventListener('activate', e => {
+          e.waitUntil(self.clients.claim());
+        });
+        self.addEventListener('fetch', e => {
+          e.respondWith(
+            caches.match(e.request).then(res => res || fetch(e.request).catch(() => caches.match('./')))
+          );
+        });`;
+      const blob = new Blob([swCode], { type: 'text/javascript' });
+      const swUrl = URL.createObjectURL(blob);
+      try {
+        await navigator.serviceWorker.register(swUrl);
+      } catch (err) {
+        console.log('service worker register skipped', err);
+      }
+    }
+
+    // 서버 연결 안내
+    document.getElementById('serverGuideBtn').addEventListener('click', () => {
+      installMsg.innerHTML = '현재 파일은 <b>브라우저 저장(localStorage)</b>까지 연결되어 있습니다. 실제 서버 저장은 Supabase/Firebase/Node 서버 주소와 키가 있어야 합니다. 다음 단계로는 회원가입 정보를 POST로 보내는 API 연결을 붙이면 됩니다.';
+    });
+
+    // 초기 로드
+    populateDateFields();
+    renderMessages();
+    registerServiceWorker();
+
+    const savedProfile = loadProfile();
+    if (savedProfile) {
+      nicknameEl.value = savedProfile.nickname || '';
+      if ([...yearEl.options].some(opt => opt.value === String(savedProfile.year))) {
+        yearEl.value = String(savedProfile.year);
+      }
+      monthEl.value = String(savedProfile.month);
+      updateDays();
+      dayEl.value = String(savedProfile.day);
+      hourEl.value = String(savedProfile.hour);
+      minuteEl.value = String(savedProfile.minute);
+      renderProfile(savedProfile);
+      showScreen(mainScreen);
+    }
+  </script>
+</body>
+</html>
