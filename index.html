@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>궁합 매칭 앱</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+<h1>❤️ 궁합 매칭 앱 테스트</h1>
+
+<button onclick="login()">Firebase 로그인</button>
+<button onclick="saveProfile()">내 정보 저장</button>
+<button onclick="loadUsers()">매칭 보기</button>
+
+<hr>
+
+<div id="output"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyB8Xy1YVVO3rkzOfHP6emVwYtISTTnS-ko",
+  authDomain: "matching-app-d2290.firebaseapp.com",
+  projectId: "matching-app-d2290",
+  storageBucket: "matching-app-d2290.firebasestorage.app",
+  messagingSenderId: "55086139014",
+  appId: "1:55086139014:web:25c73d916e719f9cd2b307",
+  measurementId: "G-ZP4LNL4N4V"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let myUid = null;
+
+/* 로그인 */
+window.login = async function () {
+  try {
+    const user = await signInAnonymously(auth);
+    myUid = user.user.uid;
+    alert("로그인 성공: " + myUid);
+  } catch (e) {
+    alert("로그인 실패: " + e.message);
+    console.error(e);
+  }
+};
+
+/* 프로필 저장 */
+window.saveProfile = async function () {
+  if (!myUid) return alert("로그인 먼저 하세요");
+
+  await setDoc(doc(db, "users", myUid), {
+    uid: myUid,
+    age: Math.floor(Math.random() * 20) + 25,
+    mbti: ["INTJ","ENFP","ISTP","INFJ"][Math.floor(Math.random()*4)],
+    region: ["서울","부산","대구"][Math.floor(Math.random()*3)],
+    trust: Math.floor(Math.random()*100)
+  });
+
+  alert("저장 완료");
+};
+
+/* 유저 조회 */
+window.loadUsers = async function () {
+  const snapshot = await getDocs(collection(db, "users"));
+
+  let html = "";
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    html += `
+      <div style="border:1px solid #ccc; padding:10px; margin:10px;">
+        <b>${d.uid}</b><br>
+        나이: ${d.age}<br>
+        MBTI: ${d.mbti}<br>
+        지역: ${d.region}<br>
+        신뢰도: ${d.trust}
+      </div>
+    `;
+  });
+
+  document.getElementById("output").innerHTML = html;
+};
+
+</script>
+
+</body>
+</html>
