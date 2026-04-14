@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>궁합 매칭 앱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f6f6f6;
+      color: #222;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+    .notice {
+      background: #fff3cd;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .danger-box {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+    }
+    .admin-box {
+      background: #fff7e6;
+      border: 1px solid #f3d18b;
+    }
+    .premium-box {
+      background: #eef7ff;
+      border: 1px solid #cfe2ff;
+    }
+    .ad-box {
+      background: #f8f9fa;
+      border: 1px dashed #bbb;
+      text-align: center;
+      color: #666;
+      font-size: 14px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+    input, select, button, textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      border: none;
+      background: #111;
+      color: white;
+      cursor: pointer;
+      margin-top: 14px;
+    }
+    button.secondary { background: #666; }
+    button.red { background: #c0392b; }
+    button.orange { background: #d97706; }
+    button.gold { background: #b8860b; }
+
+    .tag {
+      display: inline-block;
+      background: #eee;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+    .score {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .grade1 { background: #ffe8e8; }
+    .grade2 { background: #eef7ff; }
+    .grade3 { background: #f4f4f4; }
+    .small {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+    .danger {
+      color: #c0392b;
+      font-weight: bold;
+    }
+    .messages {
+      min-height: 220px;
+      max-height: 380px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fafafa;
+      padding: 10px;
+      margin-bottom: 12px;
+    }
+    .msg {
+      background: white;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .msg.mine {
+      background: #e8f3ff;
+    }
+    .msg-meta {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .hidden {
+      display: none;
+    }
+    .section-title {
+      margin: 18px 0 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .inline-flex {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .stat {
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .trust-bar {
+      width: 100%;
+      height: 10px;
+      background: #e9ecef;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+    .trust-fill {
+      height: 100%;
+      background: #ff8c42;
+      width: 0%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💘 궁합 매칭 앱</h1>
+
+    <div class="notice">
+      신고 / 차단 / 관리자 / 결제 / 광고 포함 버전입니다.<br>
+      5일 자동삭제는 이번 버전에서 제외했습니다.<br>
+      실결제와 실광고는 아직 테스트 UI이며, 현재는 Firebase 기반 서비스 흐름 확인용입니다.
+    </div>
+
+    <div class="card">
+      <h3>1. 로그인</h3>
+      <div id="authStatus" class="small">로그인 전</div>
+      <button onclick="login()">Firebase 로그인</button>
+    </div>
+
+    <div class="card">
+      <h3>2. 내 정보 입력</h3>
+
+      <label for="gender">성별</label>
+      <select id="gender">
+        <option value="male">남성</option>
+        <option value="female">여성</option>
+      </select>
+
+      <label for="birthDate">생년월일</label>
+      <input type="date" id="birthDate" />
+
+      <label for="birthTime">태어난 시간</label>
+      <input type="time" id="birthTime" />
+
+      <label for="mbti">MBTI</label>
+      <select id="mbti">
+        <option>INTJ</option>
+        <option>INTP</option>
+        <option>ENTJ</option>
+        <option>ENTP</option>
+        <option>INFJ</option>
+        <option>INFP</option>
+        <option>ENFJ</option>
+        <option>ENFP</option>
+        <option>ISTJ</option>
+        <option>ISFJ</option>
+        <option>ESTJ</option>
+        <option>ESFJ</option>
+        <option>ISTP</option>
+        <option>ISFP</option>
+        <option>ESTP</option>
+        <option>ESFP</option>
+      </select>
+
+      <label for="region">지역</label>
+      <select id="region"></select>
+
+      <label for="distanceLimit">최대 거리</label>
+      <select id="distanceLimit">
+        <option value="10">10km</option>
+        <option value="20">20km</option>
+        <option value="30">30km</option>
+        <option value="50" selected>50km</option>
+        <option value="100">100km</option>
+        <option value="300">300km</option>
+      </select>
+
+      <button onclick="saveProfile()">내 정보 저장</button>
+      <div id="saveStatus" class="small"></div>
+    </div>
+
+    <div class="card premium-box">
+      <h3>3. 이용권 / 광고</h3>
+      <div id="premiumStatus" class="small">기본 회원</div>
+      <button class="gold" onclick="buyPremium()">프리미엄 시작하기 (테스트)</button>
+      <div class="small" style="margin-top:10px;">
+        프리미엄 기능:
+        <br>• 광고 제거
+        <br>• 더 많은 매칭 노출
+        <br>• 관리자용 상세 궁합 설명과 비슷한 수준의 자세한 해석 제공 가능
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>4. 내 프로필</h3>
+      <div id="myProfileBox" class="small">아직 저장된 정보 없음</div>
+    </div>
+
+    <div class="card">
+      <h3>5. 매칭</h3>
+      <button onclick="loadMatches()">매칭 불러오기</button>
+      <div id="matchInfo" class="small" style="margin-top:10px;"></div>
+    </div>
+
+    <div id="adTop" class="card ad-box">
+      광고 영역 (무료 회원 노출)
+    </div>
+
+    <div id="matchList"></div>
+
+    <div id="chatSection" class="card hidden">
+      <h3 id="chatTitle">채팅</h3>
+      <div class="small" id="chatSubTitle">상대와 실시간 채팅</div>
+
+      <div class="card danger-box" style="margin-top:14px;">
+        <strong>안전 기능</strong>
+
+        <label for="reportReason">신고 사유</label>
+        <select id="reportReason">
+          <option>욕설 / 비매너</option>
+          <option>성희롱 / 불쾌한 대화</option>
+          <option>금전 요구</option>
+          <option>위험한 만남 유도</option>
+          <option>기타</option>
+        </select>
+
+        <div class="inline-flex" style="margin-top:10px;">
+          <button class="orange" onclick="reportCurrentUser()">신고하기</button>
+          <button class="red" onclick="blockCurrentUser()">차단하기</button>
+        </div>
+      </div>
+
+      <div id="adChat" class="card ad-box">
+        채팅 사이 광고 (무료 회원 노출)
+      </div>
+
+      <div id="messages" class="messages"></div>
+      <input id="msgInput" type="text" placeholder="메시지를 입력하세요" />
+      <button onclick="sendMessage()">메시지 보내기</button>
+      <button class="secondary" onclick="closeChat()">채팅 닫기</button>
+    </div>
+
+    <div class="card admin-box">
+      <h3>관리자 모드</h3>
+      <div class="small">운영 테스트용입니다. 저장된 사용자 / 신고 / 정지 / 신뢰도를 확인합니다.</div>
+      <button onclick="toggleAdmin()">관리자 대시보드 열기 / 닫기</button>
+    </div>
+
+    <div id="adminSection" class="hidden">
+      <div class="card">
+        <h3>관리자 통계</h3>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>총 사용자</strong><br>
+            <span id="adminTotalUsers">0명</span>
+          </div>
+          <div class="stat">
+            <strong>정지 사용자</strong><br>
+            <span id="adminBannedUsers">0명</span>
+          </div>
+          <div class="stat">
+            <strong>평균 신뢰도</strong><br>
+            <span id="adminAvgTrust">0℃</span>
+          </div>
+          <div class="stat">
+            <strong>신고 건수</strong><br>
+            <span id="adminReportCount">0건</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>사용자 목록</h3>
+        <div id="adminUserList"></div>
+      </div>
+
+      <div class="card">
+        <h3>최근 신고</h3>
+        <div id="adminReportList"></div>
+      </div>
+
+      <button onclick="loadAdminData()">관리자 데이터 새로고침</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      setDoc,
+      getDoc,
+      updateDoc,
+      getDocs,
+      addDoc,
+      collection,
+      query,
+      orderBy,
+      onSnapshot,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8Xy1YVVO3rkzOfHP6emVwYtISTTnS-ko",
+      authDomain: "matching-app-d2290.firebaseapp.com",
+      projectId: "matching-app-d2290",
+      storageBucket: "matching-app-d2290.firebasestorage.app",
+      messagingSenderId: "55086139014",
+      appId: "1:55086139014:web:25c73d916e719f9cd2b307",
+      measurementId: "G-ZP4LNL4N4V"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const REGION_COORDS = {
+      "서울 강남": [37.4979, 127.0276],
+      "서울 서초": [37.4837, 127.0324],
+      "서울 송파": [37.5145, 127.1066],
+      "서울 강동": [37.5301, 127.1238],
+      "서울 마포": [37.5663, 126.9019],
+      "서울 종로": [37.5735, 126.9788],
+      "서울 영등포": [37.5264, 126.8962],
+      "경기 성남": [37.4200, 127.1265],
+      "경기 수원": [37.2636, 127.0286],
+      "경기 고양": [37.6584, 126.8320],
+      "인천 연수": [37.4102, 126.6788],
+      "인천 부평": [37.5070, 126.7219],
+      "부산 해운대": [35.1632, 129.1636],
+      "부산 수영": [35.1456, 129.1131],
+      "대구 수성": [35.8583, 128.6306],
+      "대구 달서": [35.8299, 128.5327],
+      "대전 유성": [36.3622, 127.3568],
+      "대전 서구": [36.3551, 127.3834],
+      "광주 북구": [35.1741, 126.9111],
+      "광주 서구": [35.1520, 126.8900],
+      "울산 남구": [35.5384, 129.3114],
+      "울산 중구": [35.5697, 129.3320],
+      "세종": [36.4800, 127.2890],
+      "강원 춘천": [37.8813, 127.7298],
+      "강원 원주": [37.3422, 127.9202],
+      "충북 청주": [36.6424, 127.4890],
+      "충남 천안": [36.8151, 127.1139],
+      "전북 전주": [35.8242, 127.1480],
+      "전남 순천": [34.9506, 127.4872],
+      "경북 포항": [36.0190, 129.3435],
+      "경남 창원": [35.2285, 128.6811],
+      "제주 제주시": [33.4996, 126.5312]
+    };
+
+    const heavenlyStems = ["갑","을","병","정","무","기","경","신","임","계"];
+    const earthlyBranches = ["자","축","인","묘","진","사","오","미","신","유","술","해"];
+
+    const stemElements = {
+      "갑":"목","을":"목","병":"화","정":"화","무":"토","기":"토","경":"금","신":"금","임":"수","계":"수"
+    };
+    const stemYinYang = {
+      "갑":"양","을":"음","병":"양","정":"음","무":"양","기":"음","경":"양","신":"음","임":"양","계":"음"
+    };
+    const branchElements = {
+      "자":"수","축":"토","인":"목","묘":"목","진":"토","사":"화","오":"화","미":"토","신":"금","유":"금","술":"토","해":"수"
+    };
+    const branchYinYang = {
+      "자":"양","축":"음","인":"양","묘":"음","진":"양","사":"음","오":"양","미":"음","신":"양","유":"음","술":"양","해":"음"
+    };
+
+    const monthBranchMap = {
+      1:"축", 2:"인", 3:"묘", 4:"진", 5:"사", 6:"오",
+      7:"미", 8:"신", 9:"유", 10:"술", 11:"해", 12:"자"
+    };
+
+    const triHarmony = [
+      ["신","자","진"],
+      ["해","묘","미"],
+      ["인","오","술"],
+      ["사","유","축"]
+    ];
+    const directionalHarmony = [
+      ["인","묘","진"],
+      ["사","오","미"],
+      ["신","유","술"],
+      ["해","자","축"]
+    ];
+    const sixClash = {
+      "자":"오","축":"미","인":"신","묘":"유","진":"술","사":"해",
+      "오":"자","미":"축","신":"인","유":"묘","술":"진","해":"사"
+    };
+    const sixHarm = {
+      "자":"미","축":"오","인":"사","묘":"진","신":"해","유":"술",
+      "미":"자","오":"축","사":"인","진":"묘","해":"신","술":"유"
+    };
+    const darkCombine = {
+      "자":"사","축":"인","묘":"신","오":"해","유":"진","미":"자"
+    };
+    const formPenaltyPairs = [
+      ["자","묘"],["인","사"],["사","신"],["신","인"],
+      ["축","술"],["술","미"],["미","축"],
+      ["진","진"],["오","오"],["유","유"],["해","해"]
+    ];
+
+    const elementGenerate = { "목":"화", "화":"토", "토":"금", "금":"수", "수":"목" };
+    const elementControl = { "목":"토", "토":"수", "수":"화", "화":"금", "금":"목" };
+
+    let myUid = null;
+    let myProfile = null;
+    let currentChatId = null;
+    let currentChatTarget = null;
+    let unsubscribeChat = null;
+
+    function initRegions() {
+      const regionSelect = document.getElementById("region");
+      const regions = Object.keys(REGION_COORDS).sort((a, b) => a.localeCompare(b, "ko"));
+      regionSelect.innerHTML = regions.map(region => `<option>${region}</option>`).join("");
+    }
+
+    function setAdultDateLimit() {
+      const today = new Date();
+      const limit = new Date(today.getFullYear() - 19, today.getMonth(), today.getDate());
+      const yyyy = limit.getFullYear();
+      const mm = String(limit.getMonth() + 1).padStart(2, "0");
+      const dd = String(limit.getDate()).padStart(2, "0");
+      document.getElementById("birthDate").max = `${yyyy}-${mm}-${dd}`;
+    }
+
+    function calculateAge(birthDate) {
+      const today = new Date();
+      const birth = new Date(birthDate);
+      let age = today.getFullYear() - birth.getFullYear();
+      const m = today.getMonth() - birth.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+      return age;
+    }
+
+    function toRad(deg) {
+      return deg * (Math.PI / 180);
+    }
+
+    function getDistanceKm(regionA, regionB) {
+      const a = REGION_COORDS[regionA];
+      const b = REGION_COORDS[regionB];
+      if (!a || !b) return 999;
+
+      const R = 6371;
+      const dLat = toRad(b[0] - a[0]);
+      const dLon = toRad(b[1] - a[1]);
+      const lat1 = toRad(a[0]);
+      const lat2 = toRad(b[0]);
+
+      const h =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+
+      const c = 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+      return Math.round(R * c);
+    }
+
+    function formatTime(ts) {
+      if (!ts || !ts.toDate) return "";
+      const d = ts.toDate();
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function makeChatId(uid1, uid2) {
+      return [uid1, uid2].sort().join("_");
+    }
+
+    function getStarSign(dateString) {
+      const d = new Date(dateString);
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+
+      if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) return "양자리";
+      if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) return "황소자리";
+      if ((month === 5 && day >= 21) || (month === 6 && day <= 21)) return "쌍둥이자리";
+      if ((month === 6 && day >= 22) || (month === 7 && day <= 22)) return "게자리";
+      if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) return "사자
