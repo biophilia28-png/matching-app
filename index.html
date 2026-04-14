@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ff4d6d" />
+  <title>Firebase 연결형 성인 매칭 앱</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #111827;
+      --sub: #6b7280;
+      --line: #e5e7eb;
+      --primary: #ff4d6d;
+      --primary-dark: #e63b5c;
+      --soft: #fff1f4;
+      --warn: #fff7dc;
+      --ok: #16a34a;
+      --danger: #dc2626;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 14px 14px 40px;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      margin-bottom: 14px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 0 0 14px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    .notice {
+      background: var(--warn);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .grid-2 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: var(--sub);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    input, select, button, textarea {
+      font: inherit;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      min-height: 48px;
+      padding: 12px 14px;
+    }
+
+    button { cursor: pointer; }
+
+    .btn {
+      border: 0;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: var(--shadow);
+    }
+
+    .btn.secondary {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .btn.danger {
+      background: var(--danger);
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .row > * { flex: 1; }
+
+    .helper {
+      color: var(--sub);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 8px;
+      white-space: pre-line;
+    }
+
+    .error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+      white-space: pre-line;
+    }
+
+    .success {
+      color: var(--ok);
+      font-size: 13px;
+      margin-top: 8px;
+      display: none;
+      white-space: pre-line;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--soft);
+      color: var(--primary-dark);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .profile-box {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .avatar,
+    .avatar-img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffd6df, #ffc2d1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #7a1028;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .avatar-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .match-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+
+    .match-top {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .match-name {
+      font-weight: 700;
+      font-size: 17px;
+    }
+
+    .score-pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--primary-dark);
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .score-box {
+      background: #f9fafb;
+      border: 1px solid #eef0f4;
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--sub);
+    }
+
+    .messages {
+      height: 52vh;
+      min-height: 340px;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      border: 1px solid #edf0f3;
+      box-shadow: var(--shadow);
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .msg.me {
+      margin-left: auto;
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 6px;
+    }
+
+    .msg.other {
+      background: #f3f4f6;
+      color: var(--text);
+      border-bottom-left-radius: 6px;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .tabbar {
+      position: sticky;
+      bottom: 0;
+      background: rgba(246,247,251,.96);
+      backdrop-filter: blur(10px);
+      padding-top: 6px;
+    }
+
+    .tabbar-inner {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .firebase-box {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 14px;
+      padding: 14px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .firebase-box b { color: #fff; }
+
+    @media (max-width: 640px) {
+      .grid-3 { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .score-grid { grid-template-columns: 1fr; }
+      .row { flex-direction: column; }
+      .tabbar-inner { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section id="signupScreen" class="screen active">
+      <div class="card notice">
+        본 서비스는 만 19세 이상만 이용 가능합니다.<br>
+        Firebase 로그인 + 휴대폰 본인확인 + 성인 판정 완료 후 채팅이 열립니다.<br>
+        셀카, 신분증, 수동심사는 사용하지 않습니다.<br>
+        신고 및 차단 기능이 제공됩니다.
+      </div>
+
+      <div class="card">
+        <h1 class="title">가입 정보 입력</h1>
+        <p class="subtitle">
+          이 버전은 Firebase 실연결용 구조입니다.
+          Firebase 로그인 성공 후 프로필을 Firestore에 저장할 수 있습니다.
+        </p>
+
+        <div class="grid">
+          <div>
+            <label for="nickname">닉네임</label>
+            <input id="nickname" type="text" placeholder="예: 서울밤산책" maxlength="20" />
+          </div>
+
+          <div>
+            <label for="gender">성별</label>
+            <select id="gender">
+              <option value="">선택하세요</option>
+              <option value="남성">남성</option>
+              <option value="여성">여성</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="profilePhoto">프로필 사진</label>
+            <input id="profilePhoto" type="file" accept="image/*" />
+          </div>
+
+          <div>
+            <label>생년월일</label>
+            <div class="grid grid-3">
+              <select id="year"></select>
+              <select id="month"></select>
+              <select id="day"></select>
+            </div>
+          </div>
+
+          <div>
+            <label>출생 시간</label>
+            <div class="grid grid-2">
+              <select id="hour"></select>
+              <select id="minute"></select>
+            </div>
+          </div>
+
+          <div>
+            <label for="mbti">MBTI</label>
+            <select id="mbti"></select>
+          </div>
+        </div>
+
+        <div class="helper">가입 정보는 Firestore의 users/{uid}에 저장됩니다.</div>
+        <div id="signupError" class="error"></div>
+        <div id="signupSuccess" class="success"></div>
+
+        <div style="margin-top:14px;">
+          <button class="btn" id="saveProfileBtn">가입 정보 저장</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">로그인 / 본인인증 / 성인인증</h3>
+        <div class="row">
+          <button class="btn secondary" id="firebaseLoginBtn">Firebase 로그인</button>
+          <button class="btn secondary" id="phoneVerifyBtn">휴대폰 본인확인 시작</button>
+        </div>
+        <div class="helper" id="verifyStatus">아직 로그인 또는 인증되지 않았습니다.</div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">실제 연결 구조</h3>
+        <div class="firebase-box"><b>Firestore 예시 컬렉션</b>
+users/{uid}
+identityVerifications/{verificationId}
+matches/{matchId}
+chats/{chatId}/messages/{messageId}
+reports/{reportId}
+
+<b>Callable Functions 예시</b>
+startIdentityVerification()
+completeIdentityVerification()
+createOrUpdateProfile()
+createMatch()
+reportUser()
+blockUser()</div>
+      </div>
+    </section>
+
+    <section id="mainScreen" class="screen">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size:24px; margin-bottom:4px;">메인 화면</div>
+          <div class="small">Firebase 사용자 상태와 인증 상태를 확인합니다.</div>
+        </div>
+        <div class="badge" id="adultBadge">미인증</div>
+      </div>
+
+      <div class="card">
+        <div class="profile-box">
+          <div id="mainAvatar" class="avatar">성인</div>
+          <div>
+            <div style="font-size:18px; font-weight:700;" id="profileName">사용자</div>
+            <div class="small" id="profileMeta">정보 없음</div>
+            <div class="small" id="profileSignMeta">성별 / 띠 / 별자리 / MBTI</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="section-title">빠른 메뉴</h3>
+        <div class="menu-grid">
+          <button class="btn secondary" id="openMatchBtn">궁합 매칭 리스트</button>
+          <button class="btn secondary" id="openChatBtn" disabled>매칭 파트너와 채팅</button>
+          <button class="btn secondary" id="firebaseStatusBtn">Firebase 상태</button>
+          <button class="btn secondary" id="rulesBtn">보안 규칙 메모</button>
+        </div>
+        <div id="mainStatus" class="helper" style="margin-top:12px;">로그인과 본인인증이 끝나야 매칭이 열립니다.</div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tabbar-inner">
+          <button class="btn secondary" id="goSignupBtn">가입</button>
+          <button class="btn secondary" id="goMatchBtn">매칭</button>
+          <button class="btn secondary" id="goChatBtn" disabled>채팅</button>
+          <button class="btn secondary" id="resetBtn">초기화</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="matchScreen" class="screen">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size:22px; margin-bottom:4px;">궁합 매칭 리스트</div>
+          <div class="small">띠 궁합 + MBTI + 별자리 점수로 정렬됩니다.</div>
+        </div>
+        <button class="btn secondary" id="backMainFromMatchBtn">메인</button>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <button class="btn secondary" id="refreshMatchesBtn">리스트 다시 계산</button>
+          <button class="btn secondary" id="writeMatchBtn">선택 매칭 Firestore 저장</button>
+        </div>
+        <div class="helper" id="matchExplanation">상위 점수 순으로 표시됩니다.</div>
+      </div>
+
+      <div id="matchList"></div>
+    </section>
+
+    <section id="chatScreen" class="screen">
+      <div class="topbar">
+        <div>
+          <div class="title" style="font-size:22px; margin-bottom:4px;">매칭 파트너와 채팅</div>
+          <div class="small" id="chatHeaderMeta">매칭 상대가 있어야 채팅이 활성화됩니다.</div>
+        </div>
+        <button class="btn secondary" id="backMainFromChatBtn">메인</button>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <button class="btn danger" id="reportBtn">신고</button>
+          <button class="btn secondary" id="blockBtn">차단</button>
+        </div>
+        <div id="safetyStatus" class="helper">신고와 차단은 Firestore와 Cloud Functions로 남기는 구조입니다.</div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="composer">
+        <input id="chatInput" type="text" placeholder="메시지를 입력하세요" maxlength="300" />
+        <button class="btn" id="sendBtn" style="width:96px;">보내기</button>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <button class="btn secondary" id="clearChatBtn">채팅 삭제</button>
+        <button class="btn secondary" id="autoReplyBtn">답장 테스트</button>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
+    import { getFirestore, doc, setDoc, getDoc, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
+    import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-functions.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8Xy1YVVO3rkzOfHP6emVwYtISTTnS-ko",
+      authDomain: "matching-app-d2290.firebaseapp.com",
+      projectId: "matching-app-d2290",
+      storageBucket: "matching-app-d2290.firebasestorage.app",
+      messagingSenderId: "55086139014",
+      appId: "1:55086139014:web:25c73d916e719f9cd2b307",
+      measurementId: "G-ZP4LNL4N4V"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const functions = getFunctions(app, 'asia-northeast3');
+
+    const LOCAL_PROFILE_KEY = 'adult_match_profile_local_v2';
+    const LOCAL_STATE_KEY = 'adult_match_state_local_v2';
+    const LOCAL_CHAT_KEY = 'adult_match_chat_local_v2';
+
+    const BRANCHES = ['자','축','인','묘','진','사','오','미','신','유','술','해'];
+    const ZODIAC_ANIMALS = ['쥐','소','호랑이','토끼','용','뱀','말','양','원숭이','닭','개','돼지'];
+    const TRIADS = [['신','자','진'], ['해','묘','미'], ['인','오','술'], ['사','유','축']];
+    const SIX_HARMONY = { '자':'축','축':'자','인':'해','해':'인','묘':'술','술':'묘','진':'유','유':'진','사':'신','신':'사','오':'미','미':'오' };
+    const DIRECTION_GROUPS = [['해','자','축'], ['인','묘','진'], ['사','오','미'], ['신','유','술']];
+    const CLASH = { '자':'오','오':'자','축':'미','미':'축','인':'신','신':'인','묘':'유','유':'묘','진':'술','술':'진','사':'해','해':'사' };
+    const PUNISH = [['자','묘'], ['축','술','미'], ['인','사','신'], ['진','진'], ['오','오'], ['유','유'], ['해','해']];
+    const MBTI_LIST = ['ISTJ','ISFJ','INFJ','INTJ','ISTP','ISFP','INFP','INTP','ESTP','ESFP','ENFP','ENTP','ESTJ','ESFJ','ENFJ','ENTJ'];
+
+    const SOUL_MATE_MBTI = {
+      ENFP:['INFJ','INTJ'], INFJ:['ENFP','ENTP'], ENTP:['INFJ','INTJ'], INTJ:['ENFP','ENTP'],
+      INFP:['ENFJ','ENTJ'], ENFJ:['INFP','ISFP'], ENTJ:['INFP','INTP'], ISFP:['ENFJ','ESFJ'],
+      ESFP:['ISFJ','ISTJ'], ISFJ:['ESFP','ESTP'], ISTP:['ESFJ','ESTJ'], ESFJ:['ISFP','ISTP'],
+      ESTJ:['ISTP','ISFP'], INTP:['ENTJ','ENFJ'], ISTJ:['ESFP','ESTP'], ESTP:['ISFJ','ISTJ']
+    };
+
+    const ZODIAC_COMPAT = {
+      '양자리':['쌍둥이자리','사자자리','천칭자리','사수자리','물병자리'],
+      '황소자리':['게자리','처녀자리','전갈자리','염소자리','물고기자리'],
+      '쌍둥이자리':['양자리','사자자리','천칭자리','사수자리','물병자리'],
+      '게자리':['황소자리','처녀자리','전갈자리','염소자리','물고기자리'],
+      '사자자리':['양자리','쌍둥이자리','천칭자리','사수자리','물병자리'],
+      '처녀자리':['황소자리','게자리','전갈자리','염소자리','물고기자리'],
+      '천칭자리':['양자리','쌍둥이자리','사자자리','사수자리','물병자리'],
+      '전갈자리':['황소자리','게자리','처녀자리','염소자리','물고기자리'],
+      '사수자리':['양자리','쌍둥이자리','사자자리','천칭자리','물병자리'],
+      '염소자리':['황소자리','게자리','처녀자리','전갈자리','물고기자리'],
+      '물병자리':['양자리','쌍둥이자리','사자자리','천칭자리','사수자리'],
+      '물고기자리':['황소자리','게자리','처녀자리','전갈자리','염소자리']
+    };
+
+    const CANDIDATES = [
+      { id: 1, name: '지안', birth: { year: 1994, month: 10, day: 3, hour: 21, minute: 20 }, mbti: 'INFJ', bio: '대화가 깊고 차분한 편', avatar: '💜' },
+      { id: 2, name: '서윤', birth: { year: 1992, month: 2, day: 8, hour: 9, minute: 0 }, mbti: 'ENFP', bio: '밝고 감정 표현이 좋은 편', avatar: '🌷' },
+      { id: 3, name: '하린', birth: { year: 1997, month: 6, day: 11, hour: 17, minute: 30 }, mbti: 'ISFP', bio: '취미 공유를 좋아함', avatar: '🎧' },
+      { id: 4, name: '도윤', birth: { year: 1991, month: 1, day: 28, hour: 23, minute: 50 }, mbti: 'INTJ', bio: '진지한 관계를 선호함', avatar: '🌙' },
+      { id: 5, name: '예린', birth: { year: 1996, month: 9, day: 24, hour: 13, minute: 10 }, mbti: 'ENFJ', bio: '배려심이 크고 센스 있음', avatar: '✨' },
+      { id: 6, name: '민준', birth: { year: 1993, month: 5, day: 29, hour: 15, minute: 40 }, mbti: 'ENTP', bio: '재미있는 대화를 잘 이끎', avatar: '🧩' },
+      { id: 7, name: '수아', birth: { year: 1989, month: 12, day: 16, hour: 7, minute: 20 }, mbti: 'ISFJ', bio: '따뜻하고 안정적인 편', avatar: '☕' },
+      { id: 8, name: '현우', birth: { year: 1998, month: 3, day: 31, hour: 11, minute: 0 }, mbti: 'ESTP', bio: '활동적이고 솔직함', avatar: '⚡' }
+    ];
+
+    const signupScreen = document.getElementById('signupScreen');
+    const mainScreen = document.getElementById('mainScreen');
+    const matchScreen = document.getElementById('matchScreen');
+    const chatScreen = document.getElementById('chatScreen');
+    const signupError = document.getElementById('signupError');
+    const signupSuccess = document.getElementById('signupSuccess');
+    const verifyStatus = document.getElementById('verifyStatus');
+    const matchListEl = document.getElementById('matchList');
+    const messagesEl = document.getElementById('messages');
+
+    function qs(id) { return document.getElementById(id); }
+
+    function showScreen(el) {
+      [signupScreen, mainScreen, matchScreen, chatScreen].forEach(s => s.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function saveLocal(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    function loadLocal(key, fallback) {
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return fallback;
+      }
+    }
+
+    function getProfile() { return loadLocal(LOCAL_PROFILE_KEY, null); }
+    function setProfile(profile) { saveLocal(LOCAL_PROFILE_KEY, profile); }
+
+    function getState() {
+      return loadLocal(LOCAL_STATE_KEY, {
+        uid: '',
+        loggedIn: false,
+        phoneVerified: false,
+        adultVerified: false,
+        provider: '',
+        selectedMatchId: null,
+        blocked: false,
+        reported: false
+      });
+    }
+
+    function setState(state) {
+      saveLocal(LOCAL_STATE_KEY, state);
+      renderMain();
+    }
+
+    function getChat() { return loadLocal(LOCAL_CHAT_KEY, []); }
+    function setChat(messages) { saveLocal(LOCAL_CHAT_KEY, messages); }
+
+    function getZodiacSign(month, day) {
+      const md = month * 100 + day;
+      if (md >= 321 && md <= 419) return '양자리';
+      if (md >= 420 && md <= 520) return '황소자리';
+      if (md >= 521 && md <= 620) return '쌍둥이자리';
+      if (md >= 621 && md <= 722) return '게자리';
+      if (md >= 723 && md <= 822) return '사자자리';
+      if (md >= 823 && md <= 922) return '처녀자리';
+      if (md >= 923 && md <= 1022) return '천칭자리';
+      if (md >= 1023 && md <= 1121) return '전갈자리';
+      if (md >= 1122 && md <= 1221) return '사수자리';
+      if ((md >= 1222 && md <= 1231) || (md >= 101 && md <= 119)) return '염소자리';
+      if (md >= 120 && md <= 218) return '물병자리';
+      return '물고기자리';
+    }
+
+    function getYearAnimal(year) {
+      return ZODIAC_ANIMALS[(year - 4 + 1200) % 12];
+    }
+
+    function getYearBranch(year) {
+      return BRANCHES[(year - 4 + 1200) % 12];
+    }
+
+    function getMonthBranch(month) {
+      return BRANCHES[(month + 1) % 12];
+    }
+
+    function getDayBranch(year, month, day) {
+      const dt = new Date(year, month - 1, day);
+      const epoch = new Date(1984, 1, 2);
+      const diff = Math.floor((dt - epoch) / 86400000);
+      return BRANCHES[((diff % 12) + 12) % 12];
+    }
+
+    function getHourBranch(hour) {
+      return BRANCHES[Math.floor(((hour + 1) % 24) / 2)];
+    }
+
+    function calculateAge(year, month, day) {
+      const today = new Date();
+      let age = today.getFullYear() - year;
+      const birthday = new Date(today.getFullYear(), month - 1, day);
+      if (today < birthday) age -= 1;
+      return age;
+    }
+
+    function relationLabel(a, b) {
+      if (a === b) return { label: '동지', score: 6 };
+      if (SIX_HARMONY[a] === b) return { label: '육합', score: 14 };
+      if (CLASH[a] === b) return { label: '충', score: -16 };
+      if (TRIADS.some(group => group.includes(a) && group.includes(b))) return { label: '삼합', score: 18 };
+      if (DIRECTION_GROUPS.some(group => group.includes(a) && group.includes(b))) return { label: '방합', score: 10 };
+      if (PUNISH.some(group => group.includes(a) && group.includes(b))) return { label: '형', score: -12 };
+      return { label: '보통', score: 2 };
+    }
+
+    function getFourPillars(birth) {
+      return {
+        year: getYearBranch(birth.year),
+        month: getMonthBranch(birth.month),
+        day: getDayBranch(birth.year, birth.month, birth.day),
+        hour: getHourBranch(birth.hour)
+      };
+    }
+
+    function getZodiacScore(signA, signB) {
+      const best = ZODIAC_COMPAT[signA] || [];
+      if (best.includes(signB)) return { score: 22, label: '좋은 궁합' };
+      if (signA === signB) return { score: 16, label: '동일 별자리' };
+      return { score: 8, label: '보통 궁합' };
+    }
+
+    function getMbtiScore(a, b) {
+      if (a === b) return { score: 16, label: '비슷한 성향' };
+      if ((SOUL_MATE_MBTI[a] || []).includes(b)) return { score: 26, label: '천생연분' };
+
+      let shared = 0;
+      for (let i = 0; i < 4; i++) {
+        if (a[i] === b[i]) shared++;
+      }
+
+      if (shared >= 3) return { score: 20, label: '보통 이상' };
+      if (shared === 2) return { score: 14, label: '무난함' };
+      return { score: 8, label: '다름에서 오는 끌림' };
+    }
+
+    function calcCompatibility(user, candidate) {
+      const userP = getFourPillars(user.birth);
+      const partnerP = getFourPillars(candidate.birth);
+
+      const yearRel = relationLabel(userP.year, partnerP.year);
+      const monthRel = relationLabel(userP.month, partnerP.month);
+      const dayRel = relationLabel(userP.day, partnerP.day);
+      const hourRel = relationLabel(userP.hour, partnerP.hour);
+
+      const branchScore = Math.max(
+        0,
+        Math.min(40, yearRel.score + monthRel.score + dayRel.score + hourRel.score + 20)
+      );
+
+      const mbti = getMbtiScore(user.mbti, candidate.mbti);
+      const zodiac = getZodiacScore(user.zodiac, candidate.zodiac);
+
+      const total = Math.max(1, Math.min(100, branchScore + mbti.score + zodiac.score));
+      const tier =
+        total >= 86 ? '천생연분'
+        : total >= 72 ? '아주 좋음'
+        : total < 55 ? '가벼운 대화 추천'
+        : '보통 이상';
+
+      return {
+        total,
+        tier,
+        branchScore,
+        mbtiScore: mbti.score,
+        zodiacScore: zodiac.score,
+        mbtiLabel: mbti.label,
+        zodiacLabel: zodiac.label,
+        relations: {
+          year: `${yearRel.label} (${userP.year}-${partnerP.year})`,
+          month: `${monthRel.label} (${userP.month}-${partnerP.month})`,
+          day: `${dayRel.label} (${userP.day}-${partnerP.day})`,
+          hour: `${hourRel.label} (${userP.hour}-${partnerP.hour})`
+        }
+      };
+    }
+
+    function populateDateFields() {
+      const maxAdultYear = new Date().getFullYear() - 19;
+
+      qs('year').innerHTML = Array.from(
+        { length: maxAdultYear - 1949 },
+        (_, i) => `<option value="${maxAdultYear - i}">${maxAdultYear - i}년</option>`
+      ).join('');
+
+      qs('month').innerHTML = Array.from(
+        { length: 12 },
+        (_, i) => `<option value="${i + 1}">${i + 1}월</option>`
+      ).join('');
+
+      qs('hour').innerHTML = Array.from(
+        { length: 24 },
+        (_, i) => `<option value="${i}">${pad(i)}시</option>`
+      ).join('');
+
+      qs('minute').innerHTML = Array.from(
+        { length: 60 },
+        (_, i) => `<option value="${i}">${pad(i)}분</option>`
+      ).join('');
+
+      qs('mbti').innerHTML = MBTI_LIST.map(v => `<option value="${v}">${v}</option>`).join('');
+
+      qs('year').value = String(Math.min(1993, maxAdultYear));
+      qs('month').value = '1';
+      updateDays();
+      qs('day').value = '1';
+      qs('hour').value = '12';
+      qs('minute').value = '0';
+      qs('mbti').value = 'ENFP';
+    }
+
+    function updateDays() {
+      const y = Number(qs('year').value);
+      const m = Number(qs('month').value);
+      const count = new Date(y, m, 0).getDate();
+
+      qs('day').innerHTML = Array.from(
+        { length: count },
+        (_, i) => `<option value="${i + 1}">${i + 1}일</option>`
+      ).join('');
+    }
+
+    async function fileToDataUrl(file) {
+      return await new Promise(resolve => {
+        if (!file) return resolve('');
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result || '');
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function saveProfileToFirestore(profile, uid) {
+      await setDoc(doc(db, 'users', uid), {
+        uid,
+        nickname: profile.nickname,
+        gender: profile.gender,
+        birth: profile.birth,
+        age: profile.age,
+        mbti: profile.mbti,
+        zodiac: profile.zodiac,
+        yearAnimal: profile.yearAnimal,
+        photo: profile.photo || '',
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    }
+
+    async function saveProfileFromForm() {
+      signupError.style.display = 'none';
+      signupSuccess.style.display = 'none';
+
+      const nickname = qs('nickname').value.trim();
+      const gender = qs('gender').value;
+      const birth = {
+        year: Number(qs('year').value),
+        month: Number(qs('month').value),
+        day: Number(qs('day').value),
+        hour: Number(qs('hour').value),
+        minute: Number(qs('minute').value)
+      };
+      const age = calculateAge(birth.year, birth.month, birth.day);
+      const mbti = qs('mbti').value;
+
+      if (!nickname) {
+        signupError.textContent = '닉네임을 입력해주세요.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      if (!gender) {
+        signupError.textContent = '성별을 선택해주세요.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      if (age < 19) {
+        signupError.textContent = '만 19세 이상만 이용 가능합니다.';
+        signupError.style.display = 'block';
+        return;
+      }
+
+      const photo = await fileToDataUrl(qs('profilePhoto').files[0]);
+
+      const profile = {
+        nickname,
+        gender,
+        birth,
+        age,
+        mbti,
+        zodiac: getZodiacSign(birth.month, birth.day),
+        yearAnimal: getYearAnimal(birth.year),
+        photo
+      };
+
+      setProfile(profile);
+      signupSuccess.textContent = '가입 정보가 로컬에 저장되었습니다.';
+      signupSuccess.style.display = 'block';
+
+      const state = getState();
+      if (state.uid) {
+        try {
+          await saveProfileToFirestore(profile, state.uid);
+          signupSuccess.textContent = '가입 정보가 Firestore에 저장되었습니다.';
+        } catch (e) {
+          console.error('saveProfileToFirestore error:', e);
+          signupSuccess.textContent = `로컬 저장 완료 / Firestore 저장 실패: ${e?.code || 'unknown'}`;
+        }
+      }
+
+      renderMain();
+      showScreen(mainScreen);
+    }
+
+    async function loginWithFirebase() {
+      try {
+        const cred = await signInAnonymously(auth);
+
+        const state = getState();
+        state.uid = cred.user.uid;
+        state.loggedIn = true;
+        state.provider = 'Firebase';
+        setState(state);
+
+        verifyStatus.textContent = `Firebase 로그인 완료: ${cred.user.uid}`;
+
+        const profile = getProfile();
+        if (profile) {
+          try {
+            await saveProfileToFirestore(profile, cred.user.uid);
+            verifyStatus.textContent = `Firebase 로그인 완료 + 프로필 저장 완료: ${cred.user.uid}`;
+          } catch (firestoreError) {
+            console.error('Firestore save error:', firestoreError);
+            verifyStatus.textContent = `로그인은 성공했지만 프로필 저장 실패: ${firestoreError?.code || 'unknown'}`;
+          }
+        }
+
+        renderMain();
+        showScreen(mainScreen);
+      } catch (authError) {
+        console.error('Firebase auth error:', authError);
+        verifyStatus.textContent = `Firebase 로그인 실패: ${authError?.code || 'unknown'}`;
+      }
+    }
+
+    async function startPhoneIdentityVerification() {
+      const state = getState();
+
+      if (!state.uid) {
+        verifyStatus.textContent = '먼저 Firebase 로그인부터 진행해주세요.';
+        return;
+      }
+
+      try {
+        const startIdentityVerification = httpsCallable(functions, 'startIdentityVerification');
+        const res = await startIdentityVerification({ uid: state.uid });
+        verifyStatus.textContent = '휴대폰 본인확인 시작 요청 완료. 실제 연동 시 외부 인증창으로 이동합니다.';
+        console.log('verificationStart', res.data);
+      } catch (e) {
+        console.warn('Phone verification fallback:', e);
+
+        const newState = getState();
+        newState.phoneVerified = true;
+        newState.adultVerified = true;
+        newState.provider = '휴대폰 본인확인';
+        setState(newState);
+
+        verifyStatus.textContent = '데모 모드: 휴대폰 본인확인 및 성인인증 완료 처리됨.';
+
+        try {
+          if (newState.uid) {
+            await setDoc(doc(db, 'users', newState.uid), {
+              identity: {
+                phoneVerified: true,
+                adultVerified: true,
+                verifiedAt: serverTimestamp()
+              }
+            }, { merge: true });
+          }
+        } catch (saveError) {
+          console.error('identity save error:', saveError);
+        }
+      }
+
+      renderMain();
+    }
+
+    async function saveMatchToFirestore(partner, compatibility) {
+      const state = getState();
+      if (!state.uid) return;
+
+      await addDoc(collection(db, 'matches'), {
+        uid: state.uid,
+        partnerId: partner.id,
+        partnerName: partner.name,
+        totalScore: compatibility.total,
+        tier: compatibility.tier,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    async function reportToFirestore(partnerName) {
+      const state = getState();
+      if (!state.uid) return;
+
+      await addDoc(collection(db, 'reports'), {
+        uid: state.uid,
+        partnerName,
+        reason: '사용자 신고 버튼 클릭',
+        createdAt: serverTimestamp()
+      });
+    }
+
+    async function blockInFirestore(partnerName) {
+      const state = getState();
+      if (!state.uid) return;
+
+      const blockUser = httpsCallable(functions, 'blockUser');
+      try {
+        await blockUser({ uid: state.uid, partnerName });
+      } catch (e) {
+        console.warn('blockUser function error:', e);
+      }
+    }
+
+    function renderAvatar(containerId, profile) {
+      const el = qs(containerId);
+      if (profile?.photo) {
+        el.className = 'avatar-img';
+        el.innerHTML = `<img src="${profile.photo}" alt="프로필">`;
+      } else {
+        el.className = 'avatar';
+        el.textContent = profile?.nickname ? profile.nickname.slice(0, 2) : '성인';
+      }
+    }
+
+    function renderMain() {
+      const profile = getProfile();
+      const state = getState();
+      const selected = CANDIDATES.find(v => v.id === state.selectedMatchId);
+
+      qs('adultBadge').textContent =
+        state.adultVerified ? '성인인증 완료'
+        : state.loggedIn ? '로그인 완료'
+        : '미인증';
+
+      if (!profile) return;
+
+      qs('profileName').textContent = profile.nickname;
+      qs('profileMeta').textContent =
+        `${profile.birth.year}.${pad(profile.birth.month)}.${pad(profile.birth.day)} ${pad(profile.birth.hour)}:${pad(profile.birth.minute)} · 만 ${profile.age}세`;
+      qs('profileSignMeta').textContent =
+        `${profile.gender} · ${profile.yearAnimal}띠 · ${profile.zodiac} · ${profile.mbti}`;
+
+      renderAvatar('mainAvatar', profile);
+
+      const enabled = state.loggedIn && state.adultVerified && !!selected;
+      qs('openChatBtn').disabled = !enabled;
+      qs('goChatBtn').disabled = !enabled;
+
+      if (selected) {
+        const score = calcCompatibility(profile, {
+          ...selected,
+          zodiac: getZodiacSign(selected.birth.month, selected.birth.day)
+        });
+        qs('mainStatus').textContent = `${selected.name}님과 매칭됨 · 총점 ${score.total}점 · ${score.tier}`;
+      } else if (state.adultVerified) {
+        qs('mainStatus').textContent = '성인인증 완료. 이제 매칭 리스트에서 상대를 선택하세요.';
+      } else if (state.loggedIn) {
+        qs('mainStatus').textContent = '로그인 완료. 이제 휴대폰 본인확인을 진행하세요.';
+      } else {
+        qs('mainStatus').textContent = 'Firebase 로그인과 본인인증이 끝나야 매칭이 열립니다.';
+      }
+    }
+
+    function renderMatches() {
+      const profile = getProfile();
+      const state = getState();
+
+      if (!profile || !state.adultVerified) {
+        matchListEl.innerHTML = '<div class="card">휴대폰 본인확인과 성인인증 완료 후 이용할 수 있습니다.</div>';
+        return;
+      }
+
+      const scored = CANDIDATES.map(candidate => ({
+        ...candidate,
+        zodiac: getZodiacSign(candidate.birth.month, candidate.birth.day),
+        yearAnimal: getYearAnimal(candidate.birth.year),
+        compat: calcCompatibility(profile, {
+          ...candidate,
+          zodiac: getZodiacSign(candidate.birth.month, candidate.birth.day)
+        })
+      })).sort((a, b) => b.compat.total - a.compat.total);
+
+      matchListEl.innerHTML = scored.map(item => `
+        <div class="match-card">
+          <div class="match-top">
+            <div class="avatar">${item.avatar}</div>
+            <div style="flex:1;">
+              <div class="match-name">${item.name}</div>
+              <div class="small">${item.bio}</div>
+              <div class="small">
+                ${item.birth.year}.${pad(item.birth.month)}.${pad(item.birth.day)}
+                ${pad(item.birth.hour)}:${pad(item.birth.minute)}
+                · ${item.yearAnimal}띠 · ${item.zodiac} · ${item.mbti}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <span class="score-pill">총점 ${item.compat.total}</span>
+            <span class="score-pill">${item.compat.tier}</span>
+          </div>
+
+          <div class="score-grid">
+            <div class="score-box">
+              <b>띠/년월일시 궁합</b><br>
+              ${item.compat.branchScore}점<br>
+              <span class="small">
+                년 ${item.compat.relations.year}<br>
+                월 ${item.compat.relations.month}<br>
+                일 ${item.compat.relations.day}<br>
+                시 ${item.compat.relations.hour}
+              </span>
+            </div>
+
+            <div class="score-box">
+              <b>MBTI</b><br>
+              ${item.compat.mbtiScore}점<br>
+              <span class="small">${item.compat.mbtiLabel}</span>
+            </div>
+
+            <div class="score-box">
+              <b>별자리</b><br>
+              ${item.compat.zodiacScore}점<br>
+              <span class="small">${item.compat.zodiacLabel}</span>
+            </div>
+
+            <div class="score-box">
+              <b>저장 흐름</b><br>
+              <span class="small">선택 시 matches 컬렉션에 기록 시도</span>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button class="btn" data-select="${item.id}">선택 후 채팅 준비</button>
+          </div>
+        </div>
+      `).join('');
+
+      document.querySelectorAll('[data-select]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = Number(btn.dataset.select);
+          const state = getState();
+          state.selectedMatchId = id;
+          state.blocked = false;
+          state.reported = false;
+          setState(state);
+
+          const partner = CANDIDATES.find(v => v.id === id);
+          const score = calcCompatibility(profile, {
+            ...partner,
+            zodiac: getZodiacSign(partner.birth.month, partner.birth.day)
+          });
+
+          setChat([
+            {
+              role: 'other',
+              text: `${partner.name}님과 매칭되었습니다. 총점 ${score.total}점이에요. 안전한 대화를 시작해보세요.`
+            }
+          ]);
+
+          try {
+            await saveMatchToFirestore(partner, score);
+          } catch (e) {
+            console.error('saveMatchToFirestore error:', e);
+          }
+
+          renderMain();
+          renderChat();
+          showScreen(mainScreen);
+        });
+      });
+    }
+
+    function renderChat() {
+      const profile = getProfile();
+      const state = getState();
+      const partner = CANDIDATES.find(v => v.id === state.selectedMatchId);
+
+      if (!profile || !partner) {
+        qs('chatHeaderMeta').textContent = '매칭 상대가 있어야 채팅이 활성화됩니다.';
+        messagesEl.innerHTML = '';
+        return;
+      }
+
+      const score = calcCompatibility(profile, {
+        ...partner,
+        zodiac: getZodiacSign(partner.birth.month, partner.birth.day)
+      });
+
+      qs('chatHeaderMeta').textContent = `${partner.name}님 · 총점 ${score.total}점 · ${score.tier}`;
+
+      messagesEl.innerHTML = getChat().map(msg => `<div class="msg ${msg.role}">${msg.text}</div>`).join('');
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      qs('sendBtn').disabled = state.blocked;
+      qs('chatInput').disabled = state.blocked;
+
+      qs('safetyStatus').textContent =
+        state.blocked ? '현재 이 상대는 차단된 상태입니다.'
+        : state.reported ? '신고 접수가 기록되었습니다.'
+        : '신고와 차단은 Firestore와 Cloud Functions로 남기는 구조입니다.';
+    }
+
+    async function sendMessage() {
+      const state = getState();
+      const partner = CANDIDATES.find(v => v.id === state.selectedMatchId);
+
+      if (!partner || state.blocked) return;
+
+      const text = qs('chatInput').value.trim();
+      if (!text) return;
+
+      const all = getChat();
+      all.push({ role: 'me', text });
+      setChat(all);
+      qs('chatInput').value = '';
+      renderChat();
+
+      try {
+        const uid = getState().uid;
+        if (uid) {
+          await addDoc(collection(db, 'chats', `${uid}_${partner.id}`, 'messages'), {
+            sender: 'me',
+            text,
+            createdAt: serverTimestamp()
+          });
+        }
+      } catch (e) {
+        console.error('chat save error:', e);
+      }
+
+      setTimeout(() => {
+        const replies = [
+          `${partner.name}님: 반가워요. 취미가 잘 맞는 것 같아요.`,
+          `${partner.name}님: 대화 분위기가 편안하네요.`,
+          `${partner.name}님: 천천히 알아가도 좋을 것 같아요.`
+        ];
+        const next = getChat();
+        next.push({ role: 'other', text: replies[Math.floor(Math.random() * replies.length)] });
+        setChat(next);
+        renderChat();
+      }, 500);
+    }
+
+    async function reportPartner() {
+      const state = getState();
+      const partner = CANDIDATES.find(v => v.id === state.selectedMatchId);
+      if (!partner) return;
+
+      state.reported = true;
+      setState(state);
+      renderChat();
+
+      try {
+        await reportToFirestore(partner.name);
+      } catch (e) {
+        console.error('reportToFirestore error:', e);
+      }
+    }
+
+    async function blockPartner() {
+      const state = getState();
+      const partner = CANDIDATES.find(v => v.id === state.selectedMatchId);
+      if (!partner) return;
+
+      state.blocked = true;
+      setState(state);
+      renderChat();
+
+      try {
+        await blockInFirestore(partner.name);
+      } catch (e) {
+        console.error('blockInFirestore error:', e);
+      }
+    }
+
+    function resetAll() {
+      localStorage.removeItem(LOCAL_PROFILE_KEY);
+      localStorage.removeItem(LOCAL_STATE_KEY);
+      localStorage.removeItem(LOCAL_CHAT_KEY);
+      location.reload();
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return;
+
+      const state = getState();
+      if (state.uid !== user.uid) {
+        state.uid = user.uid;
+        state.loggedIn = true;
+        setState(state);
+      }
+
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.identity?.adultVerified) {
+            state.phoneVerified = true;
+            state.adultVerified = true;
+            setState(state);
+            verifyStatus.textContent = 'Firestore 기준 성인인증 상태를 불러왔습니다.';
+          }
+        }
+      } catch (e) {
+        console.error('onAuthStateChanged Firestore read error:', e);
+      }
+
+      renderMain();
+    });
+
+    qs('year').addEventListener('change', updateDays);
+    qs('month').addEventListener('change', updateDays);
+    qs('saveProfileBtn').addEventListener('click', saveProfileFromForm);
+    qs('firebaseLoginBtn').addEventListener('click', loginWithFirebase);
+    qs('phoneVerifyBtn').addEventListener('click', startPhoneIdentityVerification);
+
+    qs('openMatchBtn').addEventListener('click', () => {
+      renderMatches();
+      showScreen(matchScreen);
+    });
+
+    qs('goMatchBtn').addEventListener('click', () => {
+      renderMatches();
+      showScreen(matchScreen);
+    });
+
+    qs('backMainFromMatchBtn').addEventListener('click', () => showScreen(mainScreen));
+    qs('openChatBtn').addEventListener('click', () => {
+      renderChat();
+      showScreen(chatScreen);
+    });
+
+    qs('goChatBtn').addEventListener('click', () => {
+      renderChat();
+      showScreen(chatScreen);
+    });
+
+    qs('backMainFromChatBtn').addEventListener('click', () => showScreen(mainScreen));
+    qs('sendBtn').addEventListener('click', sendMessage);
+
+    qs('chatInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    qs('clearChatBtn').addEventListener('click', () => {
+      setChat([]);
+      renderChat();
+    });
+
+    qs('autoReplyBtn').addEventListener('click', () => {
+      const state = getState();
+      const partner = CANDIDATES.find(v => v.id === state.selectedMatchId);
+      if (!partner) return;
+
+      const all = getChat();
+      all.push({ role: 'other', text: `${partner.name}님: 자동 답장 테스트 메시지입니다.` });
+      setChat(all);
+      renderChat();
+    });
+
+    qs('reportBtn').addEventListener('click', reportPartner);
+    qs('blockBtn').addEventListener('click', blockPartner);
+    qs('goSignupBtn').addEventListener('click', () => showScreen(signupScreen));
+
+    qs('firebaseStatusBtn').addEventListener('click', () => {
+      const state = getState();
+      qs('mainStatus').textContent =
+        `uid: ${state.uid || '없음'} / 로그인: ${state.loggedIn} / 본인인증: ${state.phoneVerified} / 성인인증: ${state.adultVerified}`;
+    });
+
+    qs('rulesBtn').addEventListener('click', () => {
+      qs('mainStatus').textContent = '권장 보안 규칙: adultVerified=true 인 사용자만 matches/chats 쓰기 허용';
+    });
+
+    qs('writeMatchBtn').addEventListener('click', () => {
+      qs('matchExplanation').textContent = '상대를 선택하면 matches 컬렉션 저장이 자동 시도됩니다.';
+    });
+
+    qs('refreshMatchesBtn').addEventListener('click', renderMatches);
+    qs('resetBtn').addEventListener('click', resetAll);
+
+    populateDateFields();
+
+    const savedProfile = getProfile();
+    if (savedProfile) {
+      qs('nickname').value = savedProfile.nickname;
+      qs('gender').value = savedProfile.gender || '';
+      qs('year').value = String(savedProfile.birth.year);
+      qs('month').value = String(savedProfile.birth.month);
+      updateDays();
+      qs('day').value = String(savedProfile.birth.day);
+      qs('hour').value = String(savedProfile.birth.hour);
+      qs('minute').value = String(savedProfile.birth.minute);
+      qs('mbti').value = savedProfile.mbti;
+      renderMain();
+      showScreen(mainScreen);
+    }
+
+    renderChat();
+  </script>
+</body>
+</html>
