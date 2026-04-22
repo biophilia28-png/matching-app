@@ -793,20 +793,7 @@
 
       
 
-      <h2 class="section-title">앱 핵심 방향</h2>
-      <p class="section-sub">
-    
-      <div class="grid-2">
-        <div class="card">
-          <strong>복잡한 기준은 내부에서</strong>
-        </div>
-
-        <div class="card">
-          <strong>사용은 최대한 단순하게</strong>
-      
-        </div>
-      </div>
-
+  
       <div class="footer-links">
         <button class="footer-link" onclick="openModal('terms')">이용약관</button>
         <button class="footer-link" onclick="openModal('privacy')">개인정보처리방침</button>
@@ -1763,6 +1750,201 @@ function runMatchingDemo() {
   }).sort((a, b) => b.score.total - a.score.total);
 
   renderMatchingResults(myProfile, matches);
+}
+
+/* =========================================================
+   12. 사주 엔진 기본 블록
+   - 년/월/일/시 정리
+   - 연지(띠) 기반 사주 기초점수
+   - 시간 보정
+   - 기본 사주 점수 합산
+========================================================== */
+
+const earthlyBranches = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
+
+const branchAnimalMap = {
+  "자": "쥐",
+  "축": "소",
+  "인": "호랑이",
+  "묘": "토끼",
+  "진": "용",
+  "사": "뱀",
+  "오": "말",
+  "미": "양",
+  "신": "원숭이",
+  "유": "닭",
+  "술": "개",
+  "해": "돼지"
+};
+
+const sixHarmonyPairs = {
+  "자": "축",
+  "축": "자",
+  "인": "해",
+  "해": "인",
+  "묘": "술",
+  "술": "묘",
+  "진": "유",
+  "유": "진",
+  "사": "신",
+  "신": "사",
+  "오": "미",
+  "미": "오"
+};
+
+const clashPairs = {
+  "자": "오",
+  "오": "자",
+  "축": "미",
+  "미": "축",
+  "인": "신",
+  "신": "인",
+  "묘": "유",
+  "유": "묘",
+  "진": "술",
+  "술": "진",
+  "사": "해",
+  "해": "사"
+};
+
+const partialHarmonyGroups = [
+  ["신", "자", "진"],
+  ["해", "묘", "미"],
+  ["인", "오", "술"],
+  ["사", "유", "축"]
+];
+
+function getYearBranch(year) {
+  const idx = (Number(year) - 4) % 12;
+  return earthlyBranches[(idx + 12) % 12];
+}
+
+function getHourBranch(hour) {
+  const h = Number(hour);
+
+  if (h >= 23 || h < 1) return "자";
+  if (h >= 1 && h < 3) return "축";
+  if (h >= 3 && h < 5) return "인";
+  if (h >= 5 && h < 7) return "묘";
+  if (h >= 7 && h < 9) return "진";
+  if (h >= 9 && h < 11) return "사";
+  if (h >= 11 && h < 13) return "오";
+  if (h >= 13 && h < 15) return "미";
+  if (h >= 15 && h < 17) return "신";
+  if (h >= 17 && h < 19) return "유";
+  if (h >= 19 && h < 21) return "술";
+  return "해";
+}
+
+function getMonthBranch(month) {
+  const m = Number(month);
+  const map = {
+    1: "축",
+    2: "인",
+    3: "묘",
+    4: "진",
+    5: "사",
+    6: "오",
+    7: "미",
+    8: "신",
+    9: "유",
+    10: "술",
+    11: "해",
+    12: "자"
+  };
+  return map[m] || "자";
+}
+
+function getDayBranch(day) {
+  const d = Number(day);
+  return earthlyBranches[(d - 1) % 12];
+}
+
+function buildSajuBase(profile) {
+  return {
+    yearBranch: getYearBranch(profile.birthYear),
+    monthBranch: getMonthBranch(profile.birthMonth),
+    dayBranch: getDayBranch(profile.birthDay),
+    hourBranch: getHourBranch(profile.birthHour)
+  };
+}
+
+function calcBranchPairScore(branchA, branchB) {
+  if (!branchA || !branchB) return 0;
+
+  if (branchA === branchB) return 6;
+  if (sixHarmonyPairs[branchA] === branchB) return 12;
+  if (clashPairs[branchA] === branchB) return -10;
+
+  const inSameGroup = partialHarmonyGroups.some(group =>
+    group.includes(branchA) && group.includes(branchB)
+  );
+  if (inSameGroup) return 8;
+
+  return 2;
+}
+
+function calcHourMatchScore(hourA, hourB) {
+  const diff = Math.abs(Number(hourA) - Number(hourB));
+  if (diff <= 1) return 6;
+  if (diff <= 3) return 4;
+  if (diff <= 6) return 2;
+  return 0;
+}
+
+function calcSajuBaseScore(myProfile, partner) {
+  const mySaju = buildSajuBase(myProfile);
+  const partnerSaju = buildSajuBase(partner);
+
+  const yearScore = calcBranchPairScore(mySaju.yearBranch, partnerSaju.yearBranch);
+  const monthScore = calcBranchPairScore(mySaju.monthBranch, partnerSaju.monthBranch);
+  const dayScore = calcBranchPairScore(mySaju.dayBranch, partnerSaju.dayBranch);
+  const hourBranchScore = calcBranchPairScore(mySaju.hourBranch, partnerSaju.hourBranch);
+  const hourMatchScore = calcHourMatchScore(myProfile.birthHour, partner.birthHour);
+
+  const total = yearScore + monthScore + dayScore + hourBranchScore + hourMatchScore;
+
+  return {
+    total,
+    yearScore,
+    monthScore,
+    dayScore,
+    hourBranchScore,
+    hourMatchScore,
+    mySaju,
+    partnerSaju
+  };
+}
+function calculatePartnerScore(myProfile, partner) {
+  const myStar = getStarSign(myProfile.birthMonth, myProfile.birthDay);
+  const partnerStar = getStarSign(partner.birthMonth, partner.birthDay);
+
+  const myAnimal = getZodiacAnimal(myProfile.birthYear);
+  const partnerAnimal = getZodiacAnimal(partner.birthYear);
+
+  const mbtiScore = calcMbtiScore(myProfile.mbti, partner.mbti);
+  const starScore = calcStarScore(myStar, partnerStar);
+  const zodiacScore = calcZodiacScore(myAnimal, partnerAnimal);
+  const ageScore = calcAgeGapScore(myProfile.birthYear, partner.birthYear);
+  const regionScore = calcRegionScore(myProfile.region, partner.region);
+  const sajuBase = calcSajuBaseScore(myProfile, partner);
+
+  const total = mbtiScore + starScore + zodiacScore + ageScore + regionScore + sajuBase.total;
+
+  return {
+    total,
+    mbtiScore,
+    starScore,
+    zodiacScore,
+    ageScore,
+    regionScore,
+    sajuBaseScore: sajuBase.total,
+    sajuBase,
+    myStar,
+    partnerStar,
+    myAnimal,
+    partnerAnimal
+  };
 }
     loadProfileDraft();
 applyAppMode();
