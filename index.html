@@ -750,6 +750,33 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* 🔥 강제 적용 */
+select,
+select option,
+.field-wrap select {
+  color: #000 !important;
+  background-color: #fff !important;
+}
+
+/* 🔥 입력창 글씨색 */
+input,
+textarea {
+  color: #000 !important;
+  background: #fff !important;
+}
+
+/* 🔥 MBTI / 선택 버튼 */
+.chip {
+  color: #000 !important;
+  background: #fff !important;
+}
+
+/* 🔥 선택된 상태 */
+.chip.active {
+  background: #2687ff !important;
+  color: #fff !important;
+}
   </style>
 </head>
 <body>
@@ -1951,3 +1978,4 @@ applyAppMode();
   </script>
 </body>
 </html>
+
