@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>궁합 테스트 | MBTI · 별자리 · 사주팔자</title>
+  <meta name="description" content="MBTI 궁합, 별자리 궁합, 사주팔자 궁합을 한 번에 확인하고 커플, 가족, 자녀, 시부모, 직장 인간관계까지 비교해보세요." />
+  <style>
+    :root {
+      --bg: #fff8fb;
+      --card: #ffffff;
+      --line: #f0d9e6;
+      --text: #23161d;
+      --sub: #6f5560;
+      --primary: #ff4f8b;
+      --primary-soft: #ffe0eb;
+      --secondary: #7a5cff;
+      --good: #0a9b57;
+      --mid: #a26b00;
+      --bad: #c53a3a;
+      --shadow: 0 10px 30px rgba(126, 55, 89, 0.08);
+      --radius: 18px;
+      --max: 1140px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #fff8fb 0%, #fff 40%, #fff7f1 100%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; }
+    .container { width: min(calc(100% - 24px), var(--max)); margin: 0 auto; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(240,217,230,0.8);
+    }
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .brand-badge {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #ff8bb5);
+      color: #fff;
+      box-shadow: var(--shadow);
+      font-size: 18px;
+    }
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .nav a {
+      padding: 9px 12px;
+      border-radius: 999px;
+      color: var(--sub);
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+    .nav a:hover {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    .hero {
+      padding: 28px 0 18px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+    .hero-card,
+    .panel,
+    .result-card,
+    .table-card,
+    .ad-card,
+    .tip-card,
+    .disclaimer,
+    .cta-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .hero-card {
+      padding: 24px;
+      background:
+        radial-gradient(circle at top right, rgba(255,79,139,0.12), transparent 28%),
+        radial-gradient(circle at left bottom, rgba(122,92,255,0.12), transparent 26%),
+        #fff;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #b61c5a;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(28px, 5vw, 42px);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+    .hero p {
+      margin: 0;
+      color: var(--sub);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .btn {
+      border: 0;
+      cursor: pointer;
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-size: 15px;
+      font-weight: 800;
+      transition: 0.18s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), #ff7aa7);
+      color: #fff;
+    }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-soft {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    .btn-soft:hover { background: #fff8fb; }
+    .mini-list {
+      margin: 18px 0 0;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .mini-item {
+      padding: 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .mini-item .label {
+      font-size: 12px;
+      color: var(--sub);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .mini-item .value {
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    .panel {
+      padding: 18px;
+    }
+    .panel h2,
+    .table-card h2,
+    .result-card h2,
+    .tip-card h2,
+    .cta-card h2 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+    .muted {
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .save-note {
+      margin-top: 12px;
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: #fff8e8;
+      border: 1px solid #f4e1a4;
+      color: #805d00;
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 14px 0 12px;
+    }
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+    .section-sub {
+      color: var(--sub);
+      margin: -4px 0 14px;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--sub);
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .tab-btn.active {
+      background: var(--primary-soft);
+      color: #b61c5a;
+      border-color: #ffc8da;
+    }
+
+    .calc-layout {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      align-items: start;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    input, select {
+      width: 100%;
+      padding: 13px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+    }
+    input:focus, select:focus {
+      border-color: #ff9abd;
+      box-shadow: 0 0 0 4px rgba(255,79,139,0.08);
+    }
+    .inline-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .help {
+      font-size: 12px;
+      color: var(--sub);
+      line-height: 1.45;
+    }
+
+    .result-card {
+      padding: 18px;
+      position: sticky;
+      top: 86px;
+    }
+    .score-big {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 12px 0 14px;
+    }
+    .score-circle {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(255,79,139,0.15), rgba(122,92,255,0.15));
+      border: 1px solid var(--line);
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+    .score-text {
+      flex: 1;
+    }
+    .score-grade {
+      font-size: 13px;
+      font-weight: 900;
+      display: inline-flex;
+      padding: 7px 10px;
+      border-radius: 999px;
+      margin-bottom: 8px;
+      background: #eefaf3;
+      color: var(--good);
+    }
+    .score-grade.mid { background: #fff8e6; color: var(--mid); }
+    .score-grade.bad { background: #fff0f0; color: var(--bad); }
+    .score-summary {
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .breakdown {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .break-item {
+      padding: 12px 13px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+    .break-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .bar {
+      width: 100%;
+      height: 10px;
+      background: #f8edf3;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .bar > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+    .analysis-box {
+      margin-top: 12px;
+      padding: 13px;
+      border-radius: 14px;
+      background: #fff8fb;
+      border: 1px dashed #f1bdd0;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .cards-3,
+    .cards-2,
+    .cards-4 {
+      display: grid;
+      gap: 14px;
+    }
+    .cards-3 { grid-template-columns: repeat(3, 1fr); }
+    .cards-2 { grid-template-columns: repeat(2, 1fr); }
+    .cards-4 { grid-template-columns: repeat(4, 1fr); }
+
+    .table-card,
+    .tip-card,
+    .cta-card,
+    .ad-card,
+    .disclaimer {
+      padding: 18px;
+    }
+    .rank-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .rank-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+    .rank-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      background: var(--primary-soft);
+      color: #b61c5a;
+      font-size: 14px;
+    }
+    .pair-title {
+      font-weight: 800;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+    .pair-desc {
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .pair-score {
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .chip {
+      padding: 9px 11px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--sub);
+      font-weight: 700;
+    }
+
+    .ad-placeholder {
+      margin-top: 12px;
+      border: 2px dashed #eed2df;
+      border-radius: 16px;
+      min-height: 110px;
+      display: grid;
+      place-items: center;
+      color: #b17e91;
+      text-align: center;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #fff9fc);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    details {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      padding: 12px 14px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--text);
+      list-style: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    details p {
+      margin: 10px 0 0;
+      color: var(--sub);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      padding: 28px 0 90px;
+      color: var(--sub);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .floating-cta {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      z-index: 35;
+      width: min(calc(100% - 20px), 700px);
+      background: rgba(35,22,29,0.94);
+      color: #fff;
+      border-radius: 18px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.16);
+      align-items: center;
+      justify-content: space-between;
+    }
+    .floating-text {
+      font-size: 13px;
+      line-height: 1.45;
+      padding: 0 6px;
+      color: rgba(255,255,255,0.9);
+    }
+    .floating-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .floating-actions a {
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .floating-main { background: var(--primary); color: #fff; }
+    .floating-sub { background: #fff; color: var(--text); }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .calc-layout,
+      .cards-3,
+      .cards-4,
+      .cards-2 {
+        grid-template-columns: 1fr;
+      }
+      .mini-list { grid-template-columns: 1fr; }
+      .result-card { position: static; }
+    }
+
+    @media (max-width: 720px) {
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+      .nav { justify-content: flex-start; }
+      .form-grid,
+      .inline-row { grid-template-columns: 1fr 1fr; }
+      .score-big { flex-direction: column; align-items: flex-start; }
+      .floating-cta {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .floating-actions { width: 100%; }
+      .floating-actions a { flex: 1; text-align: center; }
+    }
+
+    @media (max-width: 520px) {
+      h1 { font-size: 28px; }
+      .hero-card,
+      .panel,
+      .table-card,
+      .result-card,
+      .tip-card,
+      .cta-card,
+      .ad-card,
+      .disclaimer { padding: 15px; }
+      .form-grid,
+      .inline-row { grid-template-columns: 1fr; }
+      .rank-item { grid-template-columns: auto 1fr; }
+      .pair-score { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#top">
+        <span class="brand-badge">❤</span>
+        <span>궁합 테스트 웹</span>
+      </a>
+      <nav class="nav">
+        <a href="#calculator">궁합 계산</a>
+        <a href="#best">최고 궁합</a>
+        <a href="#family">가족·사회 궁합</a>
+        <a href="#faq">자주 묻는 질문</a>
+        <a href="/">매칭앱으로</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-card">
+          <div class="eyebrow">MBTI · 별자리 · 사주팔자 통합 궁합</div>
+          <h1>연인, 가족, 자녀, 시부모, 직장 인간관계까지<br />한 화면에서 비교하는 궁합 사이트</h1>
+          <p>
+            자신의 생년월일시와 MBTI를 입력하면 궁합 점수와 해석을 확인할 수 있습니다.
+            커플 비교는 물론 부모·자녀, 시부모, 형제자매, 동료·상사 관계까지 확장해서 볼 수 있게 만들었습니다.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#calculator">궁합 계산 시작</a>
+            <a class="btn btn-soft" href="/">매칭앱으로 이동</a>
+          </div>
+          <div class="mini-list">
+            <div class="mini-item">
+              <div class="label">즉시 확인</div>
+              <div class="value">궁합 총점 + 상세 점수</div>
+            </div>
+            <div class="mini-item">
+              <div class="label">비교 가능</div>
+              <div class="value">연인 · 가족 · 직장 관계</div>
+            </div>
+            <div class="mini-item">
+              <div class="label">웹사이트 특징</div>
+              <div class="value">비저장 계산 구조</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>사이트 이용 전 안내</h2>
+          <p class="muted">
+            이 웹페이지는 방문자가 바로 궁합을 테스트할 수 있게 설계된 샘플 페이지입니다.
+            입력값은 브라우저 안에서 계산되며, 서버 DB 저장 없이 바로 결과를 보여주는 방식으로 구성했습니다.
+          </p>
+          <div class="save-note">
+            입력한 생년월일시와 MBTI는 이 샘플 페이지에서 서버에 저장하지 않습니다. 실제 운영 시 분석 도구나 광고 도구의 접속 로그는 별도로 남을 수 있습니다.
+          </div>
+          <div class="chip-row">
+            <span class="chip">커플 궁합</span>
+            <span class="chip">가족 궁합</span>
+            <span class="chip">부모-자녀 궁합</span>
+            <span class="chip">시부모 궁합</span>
+            <span class="chip">직장 동료 궁합</span>
+            <span class="chip">광고 위치 포함</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="calculator">
+      <div class="container">
+        <h2 class="section-title">궁합 계산</h2>
+        <p class="section-sub">
+          관계 유형을 고르고 두 사람 정보를 입력하면 MBTI, 별자리, 사주 점수와 총점을 계산합니다.
+          아래 예시는 이해를 돕기 위한 규칙 기반 계산이며, 실제 사주 전문 해석은 더 세밀한 로직으로 확장 가능합니다.
+        </p>
+
+        <div class="tabs" id="relationTabs">
+          <button class="tab-btn active" data-relation="couple">연인·커플</button>
+          <button class="tab-btn" data-relation="family">가족</button>
+          <button class="tab-btn" data-relation="parentChild">부모-자녀</button>
+          <button class="tab-btn" data-relation="inlaws">시부모·장인장모</button>
+          <button class="tab-btn" data-relation="work">직장·사회생활</button>
+        </div>
+
+        <div class="calc-layout">
+          <div class="panel">
+            <h2 id="relationTitle">연인·커플 궁합 입력</h2>
+            <p class="muted" id="relationDesc">
+              두 사람의 애정 흐름, 감정 표현 방식, 장기 관계 안정감을 중점으로 계산합니다.
+            </p>
+
+            <div class="form-grid">
+              <div class="field full">
+                <label for="nameA">첫 번째 사람 이름 또는 호칭</label>
+                <input id="nameA" type="text" placeholder="예: 나 / 남자 / 엄마 / 팀장" value="나" />
+              </div>
+              <div class="field">
+                <label for="birthA">생년월일</label>
+                <input id="birthA" type="date" value="1990-01-01" />
+              </div>
+              <div class="field">
+                <label for="mbtiA">MBTI</label>
+                <select id="mbtiA"></select>
+              </div>
+              <div class="field full">
+                <label>태어난 시간</label>
+                <div class="inline-row">
+                  <select id="hourA"></select>
+                  <select id="minuteA"></select>
+                  <select id="genderA">
+                    <option value="unknown">성별 선택 안 함</option>
+                    <option value="male">남성</option>
+                    <option value="female">여성</option>
+                  </select>
+                  <select id="roleA">
+                    <option value="self">본인</option>
+                    <option value="partner">상대역할</option>
+                    <option value="parent">부모역할</option>
+                    <option value="child">자녀역할</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field full" style="margin-top:8px; padding-top:8px; border-top:1px dashed var(--line);"></div>
+
+              <div class="field full">
+                <label for="nameB">두 번째 사람 이름 또는 호칭</label>
+                <input id="nameB" type="text" placeholder="예: 상대 / 여자 / 아버지 / 동료" value="상대" />
+              </div>
+              <div class="field">
+                <label for="birthB">생년월일</label>
+                <input id="birthB" type="date" value="1992-08-20" />
+              </div>
+              <div class="field">
+                <label for="mbtiB">MBTI</label>
+                <select id="mbtiB"></select>
+              </div>
+              <div class="field full">
+                <label>태어난 시간</label>
+                <div class="inline-row">
+                  <select id="hourB"></select>
+                  <select id="minuteB"></select>
+                  <select id="genderB">
+                    <option value="unknown">성별 선택 안 함</option>
+                    <option value="male">남성</option>
+                    <option value="female">여성</option>
+                  </select>
+                  <select id="roleB">
+                    <option value="partner">상대역할</option>
+                    <option value="self">본인</option>
+                    <option value="parent">부모역할</option>
+                    <option value="child">자녀역할</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field full">
+                <div class="help">
+                  별자리는 생년월일로 자동 계산됩니다. 사주 점수는 년·월·일·시 분할 점수, 형충회합 성격, 띠 궁합, 관계 유형 가중치로 단순화하여 보여줍니다.
+                </div>
+              </div>
+              <div class="field full">
+                <button id="calcBtn" class="btn btn-primary">궁합 점수 계산하기</button>
+              </div>
+            </div>
+          </div>
+
+          <aside class="result-card" aria-live="polite">
+            <h2>궁합 결과</h2>
+            <p class="muted">입력 후 버튼을 누르면 아래에 총점과 해석이 표시됩니다.</p>
+            <div class="score-big">
+              <div class="score-circle" id="totalScore">--</div>
+              <div class="score-text">
+                <div class="score-grade" id="scoreGrade">결과 대기중</div>
+                <div class="score-summary" id="scoreSummary">
+                  아직 계산 전입니다. 연인, 가족, 부모-자녀, 시부모, 직장 관계별로 결과 해석이 달라집니다.
+                </div>
+              </div>
+            </div>
+            <div class="breakdown">
+              <div class="break-item">
+                <div class="break-head"><span>MBTI 궁합</span><span id="mbtiScoreText">--점</span></div>
+                <div class="bar"><span id="mbtiBar" style="width:0%"></span></div>
+              </div>
+              <div class="break-item">
+                <div class="break-head"><span>별자리 궁합</span><span id="zodiacScoreText">--점</span></div>
+                <div class="bar"><span id="zodiacBar" style="width:0%"></span></div>
+              </div>
+              <div class="break-item">
+                <div class="break-head"><span>사주 점수</span><span id="sajuScoreText">--점</span></div>
+                <div class="bar"><span id="sajuBar" style="width:0%"></span></div>
+              </div>
+            </div>
+            <div class="analysis-box" id="analysisBox">
+              이곳에 관계 해석, 장점, 충돌 포인트, 잘 지내는 팁이 표시됩니다.
+            </div>
+            <div class="hero-actions" style="margin-top:14px;">
+              <a class="btn btn-primary" href="/">매칭앱에서 실제 인연 보기</a>
+              <a class="btn btn-soft" href="#best">기본 궁합표 보기</a>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="best">
+      <div class="container">
+        <h2 class="section-title">방문자가 바로 볼 수 있는 최고 궁합 표</h2>
+        <p class="section-sub">
+          화면 여유가 있을 때 기본적으로 보이게 두면 검색 유입과 체류시간에 도움이 됩니다. 점수는 사이트의 대표 예시값입니다.
+        </p>
+
+        <div class="cards-2">
+          <div class="table-card">
+            <h2>MBTI 최고 궁합 TOP</h2>
+            <div class="rank-list">
+              <div class="rank-item"><div class="rank-num">1</div><div><div class="pair-title">ENFP ❤ INFJ</div><div class="pair-desc">감정 교류와 이상 추구의 결이 잘 맞고 서로를 북돋우는 조합</div></div><div class="pair-score">96</div></div>
+              <div class="rank-item"><div class="rank-num">2</div><div><div class="pair-title">INTP ❤ ENTJ</div><div class="pair-desc">전략과 실행의 조합이 강하고 장기 비전 공유가 잘 되는 편</div></div><div class="pair-score">93</div></div>
+              <div class="rank-item"><div class="rank-num">3</div><div><div class="pair-title">ISFP ❤ ESFJ</div><div class="pair-desc">생활 밀착형 배려와 정서적 안정감이 강한 조합</div></div><div class="pair-score">90</div></div>
+              <div class="rank-item"><div class="rank-num">4</div><div><div class="pair-title">ENTP ❤ INTJ</div><div class="pair-desc">아이디어와 구조화 능력이 합쳐져 지적 긴장감이 좋은 편</div></div><div class="pair-score">89</div></div>
+              <div class="rank-item"><div class="rank-num">5</div><div><div class="pair-title">ESFP ❤ ISFJ</div><div class="pair-desc">활동성과 돌봄 성향이 균형을 이루면 편안한 관계가 되기 쉬움</div></div><div class="pair-score">87</div></div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <h2>MBTI 최악 궁합 예시</h2>
+            <div class="rank-list">
+              <div class="rank-item"><div class="rank-num">1</div><div><div class="pair-title">INTJ × ESFP</div><div class="pair-desc">속도감과 감정 표현 방식이 크게 달라 부딪히기 쉬운 조합</div></div><div class="pair-score">32</div></div>
+              <div class="rank-item"><div class="rank-num">2</div><div><div class="pair-title">INFP × ESTJ</div><div class="pair-desc">원칙과 감수성의 충돌이 크면 오해가 누적되기 쉬움</div></div><div class="pair-score">36</div></div>
+              <div class="rank-item"><div class="rank-num">3</div><div><div class="pair-title">ISFP × ENTJ</div><div class="pair-desc">결정 방식 차이가 크면 피로도가 높을 수 있음</div></div><div class="pair-score">39</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cards-2" style="margin-top:14px;">
+          <div class="table-card">
+            <h2>별자리 최고 궁합 TOP</h2>
+            <div class="rank-list">
+              <div class="rank-item"><div class="rank-num">1</div><div><div class="pair-title">천칭자리 ♎ + 물병자리 ♒</div><div class="pair-desc">대화와 거리감 조절이 좋아 편안한 공기가 잘 형성되는 편</div></div><div class="pair-score">95</div></div>
+              <div class="rank-item"><div class="rank-num">2</div><div><div class="pair-title">사자자리 ♌ + 궁수자리 ♐</div><div class="pair-desc">활동성, 자신감, 에너지 레벨이 맞으면 시너지가 큼</div></div><div class="pair-score">94</div></div>
+              <div class="rank-item"><div class="rank-num">3</div><div><div class="pair-title">물고기자리 ♓ + 전갈자리 ♏</div><div class="pair-desc">감정 몰입과 깊은 유대감 형성에 강한 조합</div></div><div class="pair-score">93</div></div>
+              <div class="rank-item"><div class="rank-num">4</div><div><div class="pair-title">쌍둥이자리 ♊ + 천칭자리 ♎</div><div class="pair-desc">말이 잘 통하고 관계 리듬이 가벼워 접근이 쉬운 편</div></div><div class="pair-score">91</div></div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <h2>별자리 최악 궁합 예시</h2>
+            <div class="rank-list">
+              <div class="rank-item"><div class="rank-num">1</div><div><div class="pair-title">전갈자리 ♏ × 물병자리 ♒</div><div class="pair-desc">집착과 거리두기 성향이 부딪히면 피로도가 높아질 수 있음</div></div><div class="pair-score">28</div></div>
+              <div class="rank-item"><div class="rank-num">2</div><div><div class="pair-title">황소자리 ♉ × 사자자리 ♌</div><div class="pair-desc">주도권과 고집 문제로 자주 부딪칠 수 있음</div></div><div class="pair-score">34</div></div>
+              <div class="rank-item"><div class="rank-num">3</div><div><div class="pair-title">처녀자리 ♍ × 쌍둥이자리 ♊</div><div class="pair-desc">생활 리듬과 집중 방식 차이로 엇갈리기 쉬움</div></div><div class="pair-score">39</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="family">
+      <div class="container">
+        <h2 class="section-title">가족·자녀·시부모·사회생활 궁합도 확장</h2>
+        <p class="section-sub">
+          이 사이트는 커플 전용으로 끝나지 않고, 가족과의 궁합, 자녀와의 궁합, 태어날 자녀 흐름 참고, 시부모·장인장모, 동료·상사 관계까지 확장할 수 있게 구성할 수 있습니다.
+        </p>
+
+        <div class="cards-4">
+          <div class="tip-card">
+            <h2>가족 궁합</h2>
+            <p class="muted">형제자매, 부모, 조부모와의 생활 리듬, 대화 방식, 갈등 회복 속도를 비교합니다.</p>
+          </div>
+          <div class="tip-card">
+            <h2>부모-자녀 궁합</h2>
+            <p class="muted">통제형인지 지지형인지, 아이의 기질과 부모의 기대 방식이 잘 맞는지 봅니다.</p>
+          </div>
+          <div class="tip-card">
+            <h2>시부모 궁합</h2>
+            <p class="muted">거리감, 예의 기준, 감정 표현 방식 차이에서 오는 스트레스를 예측합니다.</p>
+          </div>
+          <div class="tip-card">
+            <h2>직장·사회 궁합</h2>
+            <p class="muted">보고 방식, 의사결정 속도, 지시 수용도, 협업 피로도를 확인합니다.</p>
+          </div>
+        </div>
+
+        <div class="cards-2" style="margin-top:14px;">
+          <div class="tip-card">
+            <h2>최악의 궁합이면 평생 혼자 살아야 하나?</h2>
+            <p class="muted">
+              아닙니다. 최악의 궁합은 특정 조합에서 갈등 난이도가 높다는 뜻에 가깝고, 인생 전체의 사랑 가능성을 막는 판정이 아닙니다.
+              궁합은 관계 유지 난이도와 주의 포인트를 보는 참고 지표일 뿐입니다. 세상에는 더 잘 맞는 다른 사람, 다른 조합이 충분히 존재할 수 있습니다.
+            </p>
+          </div>
+          <div class="tip-card">
+            <h2>사이트에 넣기 좋은 안내 문구</h2>
+            <p class="muted">
+              궁합 점수는 관계의 가능성과 충돌 포인트를 보여주는 참고 지표이며, 개인의 가치나 사랑의 가능성을 제한하는 절대 기준이 아닙니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container cards-2">
+        <div class="ad-card">
+          <h2>광고 영역 예시</h2>
+          <p class="muted">나중에 애드센스 승인이 나면 이 위치에 광고 코드를 넣을 수 있습니다. 지금은 자리만 표시해두었습니다.</p>
+          <div class="ad-placeholder">
+            광고 자리 1<br />애드센스 코드 붙여넣기 위치
+          </div>
+        </div>
+        <div class="cta-card">
+          <h2>앱과 웹사이트를 서로 연결</h2>
+          <p class="muted">
+            웹에서는 궁합을 가볍게 계산하고, 앱에서는 실제 매칭과 채팅으로 이어지게 하면 좋습니다.
+            아래 버튼은 기존 앱 루트 경로와 연결되도록 만들어 두었습니다.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/">매칭앱 홈으로 이동</a>
+            <a class="btn btn-soft" href="#calculator">궁합 다시 계산</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq">
+      <div class="container">
+        <h2 class="section-title">자주 묻는 질문</h2>
+        <div class="faq-list">
+          <details open>
+            <summary>입력한 정보는 저장되나요?</summary>
+            <p>이 샘플 코드는 브라우저에서 계산하고 바로 결과를 보여주는 구조입니다. 별도 서버 전송이나 DB 저장 코드는 넣지 않았습니다. 다만 실제 운영 시 웹서버 접속 로그나 광고/통계 도구 로그는 남을 수 있습니다.</p>
+          </details>
+          <details>
+            <summary>기존 앱을 지우지 않고 같이 운영할 수 있나요?</summary>
+            <p>가능합니다. 이 파일은 <strong>/web/index.html</strong> 경로에 넣는 전제입니다. 기존 루트의 <strong>index.html</strong>은 그대로 두고, 앱은 루트에서, 궁합 웹사이트는 <strong>/web/</strong>에서 따로 열리게 하면 됩니다.</p>
+          </details>
+          <details>
+            <summary>사주 점수는 어떻게 계산하나요?</summary>
+            <p>이 버전은 년·월·일·시 정보를 숫자화해 오행 유사도, 띠 궁합, 시간대 조화, 관계 유형 가중치를 합산하는 방식입니다. 실제 서비스에서는 형충회합, 십성, 신살, 12운성 로직을 더 정교하게 추가하면 됩니다.</p>
+          </details>
+          <details>
+            <summary>최악의 궁합도 좋은 관계가 될 수 있나요?</summary>
+            <p>될 수 있습니다. 최악의 궁합은 갈등 관리 난이도가 높다는 뜻에 가깝습니다. 다른 조건과 노력, 생활 가치관, 책임감, 대화 방식이 더 중요한 경우도 많습니다.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="disclaimer">
+          <strong>안내:</strong> 본 페이지의 점수와 해석은 재미와 참고를 위한 예시형 결과입니다. 실제 사람 관계를 단정하거나 차별하는 기준으로 사용하지 않도록 주의하세요.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div>© 궁합 테스트 웹 샘플</div>
+      <div>문의 예시: philosophia6@naver.com</div>
+      <div>이 페이지는 /web/index.html 경로용 샘플이며, 기존 매칭앱 루트 페이지와 분리해서 운영하는 구조를 전제로 합니다.</div>
+    </div>
+  </footer>
+
+  <div class="floating-cta">
+    <div class="floating-text">궁합 계산은 웹에서, 실제 인연 찾기는 앱에서 이어가게 연결해보세요.</div>
+    <div class="floating-actions">
+      <a class="floating-sub" href="#calculator">궁합 계산</a>
+      <a class="floating-main" href="/">매칭앱 이동</a>
+    </div>
+  </div>
+
+  <script>
+    const MBTI_TYPES = [
+      "INTJ","INTP","ENTJ","ENTP",
+      "INFJ","INFP","ENFJ","ENFP",
+      "ISTJ","ISFJ","ESTJ","ESFJ",
+      "ISTP","ISFP","ESTP","ESFP"
+    ];
+
+    const relationMeta = {
+      couple: {
+        title: "연인·커플 궁합 입력",
+        desc: "두 사람의 애정 흐름, 감정 표현 방식, 장기 관계 안정감을 중점으로 계산합니다.",
+        weights: { mbti: 0.36, zodiac: 0.24, saju: 0.40 }
+      },
+      family: {
+        title: "가족 궁합 입력",
+        desc: "생활 리듬, 대화 온도, 잔소리·거리감 충돌, 회복 속도를 중점으로 계산합니다.",
+        weights: { mbti: 0.28, zodiac: 0.16, saju: 0.56 }
+      },
+      parentChild: {
+        title: "부모-자녀 궁합 입력",
+        desc: "훈육 방식, 기질 차이, 감정 수용도, 기대 수준의 충돌 가능성을 중점으로 봅니다.",
+        weights: { mbti: 0.24, zodiac: 0.14, saju: 0.62 }
+      },
+      inlaws: {
+        title: "시부모·장인장모 궁합 입력",
+        desc: "예의 기준, 거리감, 간섭 체감, 가정 내 역할 기대치 충돌을 중점으로 계산합니다.",
+        weights: { mbti: 0.22, zodiac: 0.14, saju: 0.64 }
+      },
+      work: {
+        title: "직장·사회생활 궁합 입력",
+        desc: "보고 방식, 피드백 수용도, 속도감, 책임 분배, 협업 스트레스를 중점으로 계산합니다.",
+        weights: { mbti: 0.42, zodiac: 0.10, saju: 0.48 }
+      }
+    };
+
+    const zodiacRanges = [
+      { sign: "염소자리", start: [12,22], end: [1,19] },
+      { sign: "물병자리", start: [1,20], end: [2,18] },
+      { sign: "물고기자리", start: [2,19], end: [3,20] },
+      { sign: "양자리", start: [3,21], end: [4,19] },
+      { sign: "황소자리", start: [4,20], end: [5,20] },
+      { sign: "쌍둥이자리", start: [5,21], end: [6,21] },
+      { sign: "게자리", start: [6,22], end: [7,22] },
+      { sign: "사자자리", start: [7,23], end: [8,22] },
+      { sign: "처녀자리", start: [8,23], end: [9,22] },
+      { sign: "천칭자리", start: [9,23], end: [10,22] },
+      { sign: "전갈자리", start: [10,23], end: [11,22] },
+      { sign: "사수자리", start: [11,23], end: [12,21] }
+    ];
+
+    const zodiacElements = {
+      "양자리": "fire", "사자자리": "fire", "사수자리": "fire",
+      "황소자리": "earth", "처녀자리": "earth", "염소자리": "earth",
+      "쌍둥이자리": "air", "천칭자리": "air", "물병자리": "air",
+      "게자리": "water", "전갈자리": "water", "물고기자리": "water"
+    };
+
+    const zodiacBestPairs = new Set([
+      ["천칭자리","물병자리"].sort().join("|"),
+      ["천칭자리","쌍둥이자리"].sort().join("|"),
+      ["사자자리","사수자리"].sort().join("|"),
+      ["사자자리","양자리"].sort().join("|"),
+      ["물고기자리","전갈자리"].sort().join("|"),
+      ["물고기자리","게자리"].sort().join("|"),
+      ["쌍둥이자리","물병자리"].sort().join("|"),
+      ["황소자리","처녀자리"].sort().join("|")
+    ]);
+
+    const zodiacWorstPairs = new Set([
+      ["전갈자리","물병자리"].sort().join("|"),
+      ["황소자리","사자자리"].sort().join("|"),
+      ["처녀자리","쌍둥이자리"].sort().join("|"),
+      ["양자리","게자리"].sort().join("|"),
+      ["사수자리","처녀자리"].sort().join("|")
+    ]);
+
+    const zodiacAnimals = ["쥐띠","소띠","호랑이띠","토끼띠","용띠","뱀띠","말띠","양띠","원숭이띠","닭띠","개띠","돼지띠"];
+    const animalTriads = [
+      [0,4,8], [1,5,9], [2,6,10], [3,7,11]
+    ];
+    const animalConflicts = {
+      0: 6, 1: 7, 2: 8, 3: 9, 4: 10, 5: 11,
+      6: 0, 7: 1, 8: 2, 9: 3, 10: 4, 11: 5
+    };
+
+    const mbtiSelectA = document.getElementById("mbtiA");
+    const mbtiSelectB = document.getElementById("mbtiB");
+    const hourA = document.getElementById("hourA");
+    const hourB = document.getElementById("hourB");
+    const minuteA = document.getElementById("minuteA");
+    const minuteB = document.getElementById("minuteB");
+
+    function fillSelect(select, options) {
+      select.innerHTML = options.map(v => `<option value="${v}">${v}</option>`).join("");
+    }
+
+    fillSelect(mbtiSelectA, MBTI_TYPES);
+    fillSelect(mbtiSelectB, MBTI_TYPES);
+    mbtiSelectA.value = "ENFP";
+    mbtiSelectB.value = "INFJ";
+
+    fillSelect(hourA, Array.from({length:24}, (_,i) => String(i).padStart(2, "0") + "시"));
+    fillSelect(hourB, Array.from({length:24}, (_,i) => String(i).padStart(2, "0") + "시"));
+    fillSelect(minuteA, ["00분","30분"]);
+    fillSelect(minuteB, ["00분","30분"]);
+    hourA.selectedIndex = 9;
+    hourB.selectedIndex = 21;
+
+    let activeRelation = "couple";
+    const tabButtons = [...document.querySelectorAll(".tab-btn")];
+    const relationTitle = document.getElementById("relationTitle");
+    const relationDesc = document.getElementById("relationDesc");
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeRelation = btn.dataset.relation;
+        tabButtons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        relationTitle.textContent = relationMeta[activeRelation].title;
+        relationDesc.textContent = relationMeta[activeRelation].desc;
+      });
+    });
+
+    function parseDate(value) {
+      const [y,m,d] = value.split("-").map(Number);
+      return { y, m, d };
+    }
+
+    function getZodiac(month, day) {
+      for (const z of zodiacRanges) {
+        const [sm, sd] = z.start;
+        const [em, ed] = z.end;
+        if (sm <= em) {
+          if ((month === sm && day >= sd) || (month === em && day <= ed) || (month > sm && month < em)) return z.sign;
+        } else {
+          if ((month === sm && day >= sd) || (month === em && day <= ed) || month > sm || month < em) return z.sign;
+        }
+      }
+      return "염소자리";
+    }
+
+    function getChineseAnimal(year) {
+      return zodiacAnimals[(year - 4 + 1200) % 12];
+    }
+
+    function mbtiScore(a, b, relation) {
+      let score = 52;
+      const opposites = { E:"I", I:"E", N:"S", S:"N", T:"F", F:"T", J:"P", P:"J" };
+      for (let i = 0; i < 4; i++) {
+        if (a[i] === b[i]) score += (i < 2 ? 8 : 6);
+        else if (opposites[a[i]] === b[i]) score += (i === 0 || i === 3 ? 6 : 4);
+        else score -= 5;
+      }
+      const idealPairs = new Set([
+        ["ENFP","INFJ"].sort().join("|"), ["INTP","ENTJ"].sort().join("|"),
+        ["ISFP","ESFJ"].sort().join("|"), ["ENTP","INTJ"].sort().join("|"),
+        ["ESFP","ISFJ"].sort().join("|")
+      ]);
+      const harshPairs = new Set([
+        ["INTJ","ESFP"].sort().join("|"), ["INFP","ESTJ"].sort().join("|"), ["ISFP","ENTJ"].sort().join("|")
+      ]);
+      const key = [a,b].sort().join("|");
+      if (idealPairs.has(key)) score += 10;
+      if (harshPairs.has(key)) score -= 14;
+      if (relation === "work") {
+        if ((a.includes("J") && b.includes("P")) || (a.includes("P") && b.includes("J"))) score -= 2;
+        if ((a.includes("T") && b.includes("F")) || (a.includes("F") && b.includes("T"))) score += 3;
+      }
+      if (relation === "parentChild") {
+        if ((a.includes("J") && b.includes("P")) || (a.includes("P") && b.includes("J"))) score -= 4;
+      }
+      return clamp(score, 0, 100);
+    }
+
+    function zodiacScore(signA, signB, relation) {
+      let score = 58;
+      const key = [signA, signB].sort().join("|");
+      if (zodiacBestPairs.has(key)) score += 28;
+      if (zodiacWorstPairs.has(key)) score -= 30;
+      const sameElement = zodiacElements[signA] === zodiacElements[signB];
+      if (sameElement) score += 12;
+      const airFire = [zodiacElements[signA], zodiacElements[signB]].sort().join("|") === ["air","fire"].join("|");
+      const earthWater = [zodiacElements[signA], zodiacElements[signB]].sort().join("|") === ["earth","water"].join("|");
+      if (airFire || earthWater) score += 10;
+      if ((zodiacElements[signA] === "fire" && zodiacElements[signB] === "water") || (zodiacElements[signA] === "water" && zodiacElements[signB] === "fire")) score -= 12;
+      if ((zodiacElements[signA] === "air" && zodiacElements[signB] === "earth") || (zodiacElements[signA] === "earth" && zodiacElements[signB] === "air")) score -= 8;
+      if (relation === "work") score = score - 4 + (sameElement ? 4 : 0);
+      return clamp(score, 0, 100);
+    }
+
+    function getElementFromNumber(num) {
+      return ["wood","fire","earth","metal","water"][num % 5];
+    }
+
+    function branchIndex(hour) {
+      return Math.floor(((hour + 1) % 24) / 2);
+    }
+
+    function triadMatch(a, b) {
+      return animalTriads.some(group => group.includes(a) && group.includes(b));
+    }
+
+    function sajuScore(personA, personB, relation) {
+      const yearElA = getElementFromNumber(personA.y + personA.m + personA.d);
+      const yearElB = getElementFromNumber(personB.y + personB.m + personB.d);
+      const monthElA = getElementFromNumber(personA.m + personA.d);
+      const monthElB = getElementFromNumber(personB.m + personB.d);
+      const dayElA = getElementFromNumber(personA.d + personA.hour);
+      const dayElB = getElementFromNumber(personB.d + personB.hour);
+      const timeElA = getElementFromNumber(personA.hour + personA.minute + personA.m);
+      const timeElB = getElementFromNumber(personB.hour + personB.minute + personB.m);
+
+      let score = 50;
+      const pairs = [[yearElA, yearElB, 12],[monthElA, monthElB, 10],[dayElA, dayElB, 12],[timeElA, timeElB, 8]];
+      pairs.forEach(([ea, eb, weight]) => {
+        if (ea === eb) score += weight;
+        else if (isGenerating(ea, eb) || isGenerating(eb, ea)) score += Math.round(weight * 0.8);
+        else if (isControlling(ea, eb) || isControlling(eb, ea)) score -= Math.round(weight * 0.8);
+      });
+
+      const animalA = (personA.y - 4 + 1200) % 12;
+      const animalB = (personB.y - 4 + 1200) % 12;
+      if (triadMatch(animalA, animalB)) score += 10;
+      if (animalConflicts[animalA] === animalB) score -= 12;
+      if (Math.abs(personA.hour - personB.hour) <= 2) score += 6;
+      else if (Math.abs(personA.hour - personB.hour) >= 10) score -= 5;
+
+      if (relation === "couple") {
+        score += isGenerating(dayElA, dayElB) || isGenerating(dayElB, dayElA) ? 6 : 0;
+      }
+      if (relation === "family") {
+        score += (yearElA === yearElB ? 6 : 0);
+      }
+      if (relation === "parentChild") {
+        score += isGenerating(yearElA, dayElB) || isGenerating(yearElB, dayElA) ? 8 : 0;
+        score -= isControlling(yearElA, dayElB) || isControlling(yearElB, dayElA) ? 8 : 0;
+      }
+      if (relation === "inlaws") {
+        score += (monthElA === monthElB ? 4 : 0);
+        score -= animalConflicts[animalA] === animalB ? 6 : 0;
+      }
+      if (relation === "work") {
+        score += isGenerating(monthElA, monthElB) || isGenerating(monthElB, monthElA) ? 7 : 0;
+        score += Math.abs(personA.hour - personB.hour) <= 4 ? 4 : -2;
+      }
+      return clamp(score, 0, 100);
+    }
+
+    function isGenerating(a, b) {
+      const order = ["wood","fire","earth","metal","water"];
+      return order[(order.indexOf(a) + 1) % 5] === b;
+    }
+
+    function isControlling(a, b) {
+      const controls = {
+        wood: "earth",
+        earth: "water",
+        water: "fire",
+        fire: "metal",
+        metal: "wood"
+      };
+      return controls[a] === b;
+    }
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, Math.round(n)));
+    }
+
+    function gradeInfo(score) {
+      if (score >= 85) return { text: "최고 궁합", cls: "" };
+      if (score >= 70) return { text: "좋은 궁합", cls: "" };
+      if (score >= 50) return { text: "보통 궁합", cls: "mid" };
+      return { text: "주의 필요한 궁합", cls: "bad" };
+    }
+
+    function makeSummary(score, relation, nameA, nameB) {
+      const relationNames = {
+        couple: "연인 관계",
+        family: "가족 관계",
+        parentChild: "부모-자녀 관계",
+        inlaws: "시부모·장인장모 관계",
+        work: "직장·사회 관계"
+      };
+      if (score >= 85) return `${nameA}와 ${nameB}는 ${relationNames[relation]}에서 기본 리듬이 잘 맞는 편입니다. 처음부터 편안함을 느끼기 쉬운 조합입니다.`;
+      if (score >= 70) return `${nameA}와 ${nameB}는 ${relationNames[relation]}에서 충분히 좋은 편입니다. 약간의 차이는 있지만 조율이 잘 되면 안정적으로 이어질 수 있습니다.`;
+      if (score >= 50) return `${nameA}와 ${nameB}는 ${relationNames[relation]}에서 장단점이 섞인 조합입니다. 맞는 부분은 살리고 부딪히는 포인트는 관리가 필요합니다.`;
+      return `${nameA}와 ${nameB}는 ${relationNames[relation]}에서 갈등 관리가 중요한 편입니다. 그렇다고 불가능을 뜻하는 것은 아니며, 조율 방식이 매우 중요합니다.`;
+    }
+
+    function makeAnalysis(relation, mbti, zodiac, saju, personA, personB, total) {
+      const lines = [];
+      if (mbti >= 80) lines.push("• 성향과 대화 스타일의 결이 잘 맞는 편입니다.");
+      else if (mbti < 50) lines.push("• 사고 방식과 감정 표현 방식이 달라 오해가 생기기 쉬울 수 있습니다.");
+      else lines.push("• 성향 차이가 적당히 있어 장점과 피로가 함께 있을 수 있습니다.");
+
+      if (zodiac >= 80) lines.push(`• 별자리 흐름상 ${personA.zodiac}와 ${personB.zodiac}의 분위기는 비교적 부드러운 편입니다.`);
+      else if (zodiac < 45) lines.push(`• 별자리 흐름상 ${personA.zodiac}와 ${personB.zodiac}는 거리감 조절이 중요합니다.`);
+      else lines.push("• 별자리 측면에서는 무난하지만 생활 리듬 조율이 중요합니다.");
+
+      if (saju >= 80) lines.push(`• 사주 점수상 년·월·일·시 흐름이 비교적 안정적으로 맞물리는 편입니다. (${personA.animal} · ${personB.animal})`);
+      else if (saju < 45) lines.push(`• 사주 점수상 띠나 시간대 흐름에서 상충 요소가 보여 배려가 더 필요합니다. (${personA.animal} · ${personB.animal})`);
+      else lines.push("• 사주 측면에서는 강한 충돌도 강한 결속도 아닌 중간 흐름입니다.");
+
+      if (relation === "couple") {
+        lines.push(total >= 70 ? "• 연인 관계에서는 대화의 온도를 유지하면 장기적으로 안정감이 생길 수 있습니다." : "• 연인 관계에서는 감정 표현 방식 차이를 빨리 풀어주는 것이 중요합니다.");
+      }
+      if (relation === "family") {
+        lines.push("• 가족 관계에서는 서로를 바꾸려 하기보다 생활 규칙과 거리감을 먼저 맞추는 것이 좋습니다.");
+      }
+      if (relation === "parentChild") {
+        lines.push("• 부모-자녀 관계에서는 잔소리 빈도와 기대 표현 방식을 조절하면 관계 피로를 낮출 수 있습니다.");
+      }
+      if (relation === "inlaws") {
+        lines.push("• 시부모 관계에서는 예의와 간섭의 경계가 모호해지지 않도록 말투와 빈도를 조절하는 것이 중요합니다.");
+      }
+      if (relation === "work") {
+        lines.push("• 직장 관계에서는 보고 방식, 속도감, 피드백 톤을 맞추면 충돌을 크게 줄일 수 있습니다.");
+      }
+
+      return lines.join("<br />");
+    }
+
+    function collectPerson(prefix) {
+      const birth = parseDate(document.getElementById(`birth${prefix}`).value);
+      const hourText = document.getElementById(`hour${prefix}`).value;
+      const minuteText = document.getElementById(`minute${prefix}`).value;
+      const hour = Number(hourText.replace("시", ""));
+      const minute = Number(minuteText.replace("분", ""));
+      const zodiac = getZodiac(birth.m, birth.d);
+      return {
+        name: document.getElementById(`name${prefix}`).value.trim() || (prefix === "A" ? "첫 번째 사람" : "두 번째 사람"),
+        mbti: document.getElementById(`mbti${prefix}`).value,
+        y: birth.y,
+        m: birth.m,
+        d: birth.d,
+        hour,
+        minute,
+        zodiac,
+        animal: getChineseAnimal(birth.y)
+      };
+    }
+
+    function updateResult(total, mbti, zodiac, saju, summary, analysis) {
+      document.getElementById("totalScore").textContent = total;
+      const grade = gradeInfo(total);
+      const gradeEl = document.getElementById("scoreGrade");
+      gradeEl.textContent = grade.text;
+      gradeEl.className = `score-grade ${grade.cls}`.trim();
+      document.getElementById("scoreSummary").textContent = summary;
+      document.getElementById("mbtiScoreText").textContent = `${mbti}점`;
+      document.getElementById("zodiacScoreText").textContent = `${zodiac}점`;
+      document.getElementById("sajuScoreText").textContent = `${saju}점`;
+      document.getElementById("mbtiBar").style.width = `${mbti}%`;
+      document.getElementById("zodiacBar").style.width = `${zodiac}%`;
+      document.getElementById("sajuBar").style.width = `${saju}%`;
+      document.getElementById("analysisBox").innerHTML = analysis;
+    }
+
+    document.getElementById("calcBtn").addEventListener("click", () => {
+      const personA = collectPerson("A");
+      const personB = collectPerson("B");
+      const meta = relationMeta[activeRelation];
+      const mbti = mbtiScore(personA.mbti, personB.mbti, activeRelation);
+      const zodiac = zodiacScore(personA.zodiac, personB.zodiac, activeRelation);
+      const saju = sajuScore(personA, personB, activeRelation);
+      const total = clamp(
+        mbti * meta.weights.mbti + zodiac * meta.weights.zodiac + saju * meta.weights.saju,
+        0,
+        100
+      );
+      const summary = makeSummary(total, activeRelation, personA.name, personB.name);
+      const analysis = makeAnalysis(activeRelation, mbti, zodiac, saju, personA, personB, total);
+      updateResult(total, mbti, zodiac, saju, summary, analysis);
+    });
+
+    // 초기 계산
+    document.getElementById("calcBtn").click();
+  </script>
+</body>
+</html>
