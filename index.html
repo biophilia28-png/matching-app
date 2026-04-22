@@ -1593,7 +1593,7 @@ const samplePartners = [
   birthHour: 18,
   region: "서울 송파",
   intro: "편안하고 자연스러운 만남을 좋아해요."
-}
+},
   {
     name: "지민",
     gender: "female",
@@ -1904,6 +1904,8 @@ function runMatchingDemo() {
     alert(error);
     return;
   }
+
+  alert("현재 선택 성별: " + myProfile.gender);
 
   const filteredPartners = samplePartners.filter(partner => partner.gender !== myProfile.gender);
 
