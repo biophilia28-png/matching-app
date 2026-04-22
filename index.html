@@ -1007,10 +1007,27 @@ textarea {
       궁합 계산을 실행하면 결과가 표시됩니다.
     </div>
 
-    <div class="match-list" id="match-list">
-      <div class="empty-box">
-        궁합 계산 결과가 여기에 표시됩니다.
-      </div>
+   <div class="match-list" id="match-list">
+  <div class="empty-box">
+    궁합 계산 결과가 여기에 표시됩니다.
+  </div>
+</div>
+
+<div id="chat-panel" class="chat-panel" style="display:none;">
+  <div class="chat-panel-header">
+    <strong id="chat-title">채팅창</strong>
+    <button class="btn btn-sm btn-ghost" type="button" onclick="closeChat()">닫기</button>
+  </div>
+
+  <div id="chat-messages" class="chat-messages">
+    <div class="empty-box">대화를 시작해보세요.</div>
+  </div>
+
+  <div class="chat-input-row">
+    <input id="chat-input" type="text" placeholder="메시지를 입력하세요" />
+    <button class="btn btn-sm btn-secondary" type="button" onclick="sendChatMessage()">전송</button>
+  </div>
+</div>
     </div>
   </div>
 </section>
@@ -1700,29 +1717,12 @@ function calculatePartnerScore(myProfile, partner) {
   const myAnimal = getZodiacAnimal(myProfile.birthYear);
   const partnerAnimal = getZodiacAnimal(partner.birthYear);
 
-  const mySaju = buildSajuFull(myProfile);
-  const partnerSaju = buildSajuFull(partner);
-
   const mbtiScore = calcMbtiScore(myProfile.mbti, partner.mbti);
   const starScore = calcStarScore(myStar, partnerStar);
   const zodiacScore = calcZodiacScore(myAnimal, partnerAnimal);
   const ageScore = calcAgeGapScore(myProfile.birthYear, partner.birthYear);
   const regionScore = calcRegionScore(myProfile.region, partner.region);
-
   const sajuBase = calcSajuBaseScore(myProfile, partner);
-  const branchCombo = calcBranchComboScore(mySaju, partnerSaju);
-  const twelveStar = calcTwelveStarScore(mySaju, partnerSaju);
-  const shinsal = calcShinsalScore(mySaju, partnerSaju);
-  const tenGod = calcTenGodScore(mySaju, partnerSaju);
-  const twentyYear = calcTwentyYearSegmentScore(mySaju, partnerSaju);
-
-  const sajuDeepScore =
-    sajuBase.total +
-    branchCombo.total +
-    twelveStar.total +
-    shinsal.total +
-    tenGod.total +
-    twentyYear.total;
 
   const total =
     mbtiScore +
@@ -1730,7 +1730,7 @@ function calculatePartnerScore(myProfile, partner) {
     zodiacScore +
     ageScore +
     regionScore +
-    sajuDeepScore;
+    sajuBase.total;
 
   return {
     total,
@@ -1739,24 +1739,8 @@ function calculatePartnerScore(myProfile, partner) {
     zodiacScore,
     ageScore,
     regionScore,
-
     sajuBaseScore: sajuBase.total,
-    branchComboScore: branchCombo.total,
-    twelveStarScore: twelveStar.total,
-    shinsalScore: shinsal.total,
-    tenGodScore: tenGod.total,
-    twentyYearScore: twentyYear.total,
-    sajuDeepScore,
-
     sajuBase,
-    branchCombo,
-    twelveStar,
-    shinsal,
-    tenGod,
-    twentyYear,
-
-    mySaju,
-    partnerSaju,
     myStar,
     partnerStar,
     myAnimal,
@@ -1804,7 +1788,9 @@ function renderMatchingResults(myProfile, matches) {
     const s = item.score;
     const badgeClass = getScoreBadgeClass(s.total);
     const comment = getScoreComment(s.total);
-    const chatLabel = s.total >= 90 ? "대화 추천" : s.total >= 75 ? "대화 가능" : "추천 보류";
+    const chatThreshold = 75;
+const chatLabel = s.total >= chatThreshold ? "채팅 가능" : "채팅 잠김";
+const isChatEnabled = s.total >= chatThreshold;
 
     const relationTags = [
       s.branchCombo.yearPair.type,
@@ -1830,17 +1816,22 @@ function renderMatchingResults(myProfile, matches) {
         <div class="mini-info">
           ${relationTags.map(tag => `<span>${tag}</span>`).join("")}
         </div>
+<div class="match-desc">
+  ${comment}<br>
+  MBTI / 별자리 / 사주 궁합을 종합 분석한 결과입니다.
+</div>
 
-        <div class="match-desc">
-          ${comment}<br />
-          MBTI ${s.mbtiScore} / 별자리 ${s.starScore} / 띠궁합 ${s.zodiacScore} / 나이차 ${s.ageScore} / 지역 ${s.regionScore}<br />
-          사주기초 ${s.sajuBaseScore} / 형충회합 ${s.branchComboScore} / 12운성 ${s.twelveStarScore} / 신살 ${s.shinsalScore} / 십성 ${s.tenGodScore} / 20년 ${s.twentyYearScore}
-        </div>
-
-        <div class="inline-actions">
-          <button class="btn btn-sm btn-secondary" type="button">${chatLabel}</button>
-          <button class="btn btn-sm btn-ghost" type="button">사주심화 반영</button>
-        </div>
+<div class="inline-actions">
+  <button 
+  class="btn btn-sm btn-secondary" 
+  type="button" 
+  ${isChatEnabled ? "" : "disabled"}
+  onclick="openChat('${p.name}')"
+>
+  ${chatLabel}
+</button>
+  <button class="btn btn-sm btn-ghost" type="button">사주심화 반영</button>
+</div>
       </div>
     `;
   }).join("");
@@ -2392,7 +2383,40 @@ function calculatePartnerScore(myProfile, partner) {
 }
     loadProfileDraft();
 applyAppMode();
+
+function openChat(name) {
+  const panel = document.getElementById("chat-panel");
+  const title = document.getElementById("chat-title");
+  const messages = document.getElementById("chat-messages");
+  const input = document.getElementById("chat-input");
+
+  panel.style.display = "block";
+  title.textContent = name + "님과의 채팅";
+  messages.innerHTML = `
+    <div class="empty-box">${name}님과 대화를 시작해보세요.</div>
+  `;
+  input.value = "";
+  input.focus();
+}
+
+function closeChat() {
+  document.getElementById("chat-panel").style.display = "none";
+}
+
+function sendChatMessage() {
+  const input = document.getElementById("chat-input");
+  const messages = document.getElementById("chat-messages");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  messages.innerHTML += `
+    <div class="chat-bubble me">${text}</div>
+  `;
+  input.value = "";
+
+  messages.scrollTop = messages.scrollHeight;
+}
   </script>
 </body>
 </html>
-
