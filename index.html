@@ -1009,6 +1009,8 @@ textarea {
   <button class="btn btn-primary" onclick="saveProfileDraft()">프로필 저장</button>
   <button class="btn btn-secondary" onclick="showScreen('matching')">매칭 화면으로</button>
 </div>
+</div>
+</section>
 
     <!-- =========================================================
          06. 매칭 화면 UI
@@ -2428,7 +2430,7 @@ function closeChat() {
   document.getElementById("chat-panel").style.display = "none";
 }
 
-ffunction sendChatMessage() {
+function sendChatMessage() {
   const input = document.getElementById("chat-input");
   const messages = document.getElementById("chat-messages");
   const text = input.value.trim();
