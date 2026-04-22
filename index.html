@@ -1703,13 +1703,37 @@ function calculatePartnerScore(myProfile, partner) {
   const myAnimal = getZodiacAnimal(myProfile.birthYear);
   const partnerAnimal = getZodiacAnimal(partner.birthYear);
 
+  const mySaju = buildSajuFull(myProfile);
+  const partnerSaju = buildSajuFull(partner);
+
   const mbtiScore = calcMbtiScore(myProfile.mbti, partner.mbti);
   const starScore = calcStarScore(myStar, partnerStar);
   const zodiacScore = calcZodiacScore(myAnimal, partnerAnimal);
   const ageScore = calcAgeGapScore(myProfile.birthYear, partner.birthYear);
   const regionScore = calcRegionScore(myProfile.region, partner.region);
 
-  const total = mbtiScore + starScore + zodiacScore + ageScore + regionScore;
+  const sajuBase = calcSajuBaseScore(myProfile, partner);
+  const branchCombo = calcBranchComboScore(mySaju, partnerSaju);
+  const twelveStar = calcTwelveStarScore(mySaju, partnerSaju);
+  const shinsal = calcShinsalScore(mySaju, partnerSaju);
+  const tenGod = calcTenGodScore(mySaju, partnerSaju);
+  const twentyYear = calcTwentyYearSegmentScore(mySaju, partnerSaju);
+
+  const sajuDeepScore =
+    sajuBase.total +
+    branchCombo.total +
+    twelveStar.total +
+    shinsal.total +
+    tenGod.total +
+    twentyYear.total;
+
+  const total =
+    mbtiScore +
+    starScore +
+    zodiacScore +
+    ageScore +
+    regionScore +
+    sajuDeepScore;
 
   return {
     total,
@@ -1718,6 +1742,24 @@ function calculatePartnerScore(myProfile, partner) {
     zodiacScore,
     ageScore,
     regionScore,
+
+    sajuBaseScore: sajuBase.total,
+    branchComboScore: branchCombo.total,
+    twelveStarScore: twelveStar.total,
+    shinsalScore: shinsal.total,
+    tenGodScore: tenGod.total,
+    twentyYearScore: twentyYear.total,
+    sajuDeepScore,
+
+    sajuBase,
+    branchCombo,
+    twelveStar,
+    shinsal,
+    tenGod,
+    twentyYear,
+
+    mySaju,
+    partnerSaju,
     myStar,
     partnerStar,
     myAnimal,
@@ -1743,12 +1785,11 @@ function renderMatchingResults(myProfile, matches) {
 
   if (!matches.length) {
     summary.innerHTML = `
-      계산은 완료됐지만 현재 조건에 맞는 상대가 없습니다.<br />
-      이후 점수 기준을 완화하거나 더 많은 사용자 풀이 필요합니다.
+      현재 조건에 맞는 상대가 없습니다.
     `;
     list.innerHTML = `
       <div class="empty-box">
-        현재 조건으로는 추천 가능한 상대가 없습니다.
+        추천 가능한 상대가 없습니다.
       </div>
     `;
     return;
@@ -1757,9 +1798,8 @@ function renderMatchingResults(myProfile, matches) {
   const top = matches[0];
 
   summary.innerHTML = `
-    기본 궁합 계산이 완료되었습니다.<br />
-    최고 점수 상대는 <strong>${top.name}</strong>이며 총점은 <strong>${top.score.total}</strong>점입니다.<br />
-    다음 단계에서 사주 심화 엔진(형충회합, 12운성, 신살, 십성, 20년 구간)을 추가 연결합니다.
+    추천 결과가 계산되었습니다.<br />
+    최고 점수 상대는 <strong>${top.name}</strong>, 총점은 <strong>${top.score.total}</strong>점입니다.
   `;
 
   list.innerHTML = matches.map(item => {
@@ -1767,7 +1807,14 @@ function renderMatchingResults(myProfile, matches) {
     const s = item.score;
     const badgeClass = getScoreBadgeClass(s.total);
     const comment = getScoreComment(s.total);
-    const chatLabel = s.total >= 75 ? "대화 추천" : "추천 보류";
+    const chatLabel = s.total >= 90 ? "대화 추천" : s.total >= 75 ? "대화 가능" : "추천 보류";
+
+    const relationTags = [
+      s.branchCombo.yearPair.type,
+      s.branchCombo.monthPair.type,
+      s.branchCombo.dayPair.type,
+      s.tenGod.dayType
+    ].filter(Boolean).slice(0, 4);
 
     return `
       <div class="match-card">
@@ -1783,239 +1830,21 @@ function renderMatchingResults(myProfile, matches) {
           <span>띠 ${s.partnerAnimal}</span>
         </div>
 
+        <div class="mini-info">
+          ${relationTags.map(tag => `<span>${tag}</span>`).join("")}
+        </div>
+
         <div class="match-desc">
           ${comment}<br />
-          MBTI ${s.mbtiScore} / 별자리 ${s.starScore} / 띠궁합 ${s.zodiacScore} / 나이차 ${s.ageScore} / 지역 ${s.regionScore}
+          MBTI ${s.mbtiScore} / 별자리 ${s.starScore} / 띠궁합 ${s.zodiacScore} / 나이차 ${s.ageScore} / 지역 ${s.regionScore}<br />
+          사주기초 ${s.sajuBaseScore} / 형충회합 ${s.branchComboScore} / 12운성 ${s.twelveStarScore} / 신살 ${s.shinsalScore} / 십성 ${s.tenGodScore} / 20년 ${s.twentyYearScore}
         </div>
 
         <div class="inline-actions">
           <button class="btn btn-sm btn-secondary" type="button">${chatLabel}</button>
-          <button class="btn btn-sm btn-ghost" type="button">사주 심화 연결 예정</button>
+          <button class="btn btn-sm btn-ghost" type="button">사주심화 반영</button>
         </div>
       </div>
     `;
   }).join("");
 }
-
-function runMatchingDemo() {
-  const myProfile = getBaseProfileFromForm();
-  const error = validateProfileForMatching(myProfile);
-
-  if (error) {
-    alert(error);
-    return;
-  }
-
-  const filteredPartners = samplePartners.filter(partner => partner.gender !== myProfile.gender);
-
-  const matches = filteredPartners.map(partner => {
-    return {
-      name: partner.name,
-      partner,
-      score: calculatePartnerScore(myProfile, partner)
-    };
-  }).sort((a, b) => b.score.total - a.score.total);
-
-  renderMatchingResults(myProfile, matches);
-}
-
-/* =========================================================
-   12. 사주 엔진 기본 블록
-   - 년/월/일/시 정리
-   - 연지(띠) 기반 사주 기초점수
-   - 시간 보정
-   - 기본 사주 점수 합산
-========================================================== */
-
-const earthlyBranches = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
-
-const branchAnimalMap = {
-  "자": "쥐",
-  "축": "소",
-  "인": "호랑이",
-  "묘": "토끼",
-  "진": "용",
-  "사": "뱀",
-  "오": "말",
-  "미": "양",
-  "신": "원숭이",
-  "유": "닭",
-  "술": "개",
-  "해": "돼지"
-};
-
-const sixHarmonyPairs = {
-  "자": "축",
-  "축": "자",
-  "인": "해",
-  "해": "인",
-  "묘": "술",
-  "술": "묘",
-  "진": "유",
-  "유": "진",
-  "사": "신",
-  "신": "사",
-  "오": "미",
-  "미": "오"
-};
-
-const clashPairs = {
-  "자": "오",
-  "오": "자",
-  "축": "미",
-  "미": "축",
-  "인": "신",
-  "신": "인",
-  "묘": "유",
-  "유": "묘",
-  "진": "술",
-  "술": "진",
-  "사": "해",
-  "해": "사"
-};
-
-const partialHarmonyGroups = [
-  ["신", "자", "진"],
-  ["해", "묘", "미"],
-  ["인", "오", "술"],
-  ["사", "유", "축"]
-];
-
-function getYearBranch(year) {
-  const idx = (Number(year) - 4) % 12;
-  return earthlyBranches[(idx + 12) % 12];
-}
-
-function getHourBranch(hour) {
-  const h = Number(hour);
-
-  if (h >= 23 || h < 1) return "자";
-  if (h >= 1 && h < 3) return "축";
-  if (h >= 3 && h < 5) return "인";
-  if (h >= 5 && h < 7) return "묘";
-  if (h >= 7 && h < 9) return "진";
-  if (h >= 9 && h < 11) return "사";
-  if (h >= 11 && h < 13) return "오";
-  if (h >= 13 && h < 15) return "미";
-  if (h >= 15 && h < 17) return "신";
-  if (h >= 17 && h < 19) return "유";
-  if (h >= 19 && h < 21) return "술";
-  return "해";
-}
-
-function getMonthBranch(month) {
-  const m = Number(month);
-  const map = {
-    1: "축",
-    2: "인",
-    3: "묘",
-    4: "진",
-    5: "사",
-    6: "오",
-    7: "미",
-    8: "신",
-    9: "유",
-    10: "술",
-    11: "해",
-    12: "자"
-  };
-  return map[m] || "자";
-}
-
-function getDayBranch(day) {
-  const d = Number(day);
-  return earthlyBranches[(d - 1) % 12];
-}
-
-function buildSajuBase(profile) {
-  return {
-    yearBranch: getYearBranch(profile.birthYear),
-    monthBranch: getMonthBranch(profile.birthMonth),
-    dayBranch: getDayBranch(profile.birthDay),
-    hourBranch: getHourBranch(profile.birthHour)
-  };
-}
-
-function calcBranchPairScore(branchA, branchB) {
-  if (!branchA || !branchB) return 0;
-
-  if (branchA === branchB) return 6;
-  if (sixHarmonyPairs[branchA] === branchB) return 12;
-  if (clashPairs[branchA] === branchB) return -10;
-
-  const inSameGroup = partialHarmonyGroups.some(group =>
-    group.includes(branchA) && group.includes(branchB)
-  );
-  if (inSameGroup) return 8;
-
-  return 2;
-}
-
-function calcHourMatchScore(hourA, hourB) {
-  const diff = Math.abs(Number(hourA) - Number(hourB));
-  if (diff <= 1) return 6;
-  if (diff <= 3) return 4;
-  if (diff <= 6) return 2;
-  return 0;
-}
-
-function calcSajuBaseScore(myProfile, partner) {
-  const mySaju = buildSajuBase(myProfile);
-  const partnerSaju = buildSajuBase(partner);
-
-  const yearScore = calcBranchPairScore(mySaju.yearBranch, partnerSaju.yearBranch);
-  const monthScore = calcBranchPairScore(mySaju.monthBranch, partnerSaju.monthBranch);
-  const dayScore = calcBranchPairScore(mySaju.dayBranch, partnerSaju.dayBranch);
-  const hourBranchScore = calcBranchPairScore(mySaju.hourBranch, partnerSaju.hourBranch);
-  const hourMatchScore = calcHourMatchScore(myProfile.birthHour, partner.birthHour);
-
-  const total = yearScore + monthScore + dayScore + hourBranchScore + hourMatchScore;
-
-  return {
-    total,
-    yearScore,
-    monthScore,
-    dayScore,
-    hourBranchScore,
-    hourMatchScore,
-    mySaju,
-    partnerSaju
-  };
-}
-function calculatePartnerScore(myProfile, partner) {
-  const myStar = getStarSign(myProfile.birthMonth, myProfile.birthDay);
-  const partnerStar = getStarSign(partner.birthMonth, partner.birthDay);
-
-  const myAnimal = getZodiacAnimal(myProfile.birthYear);
-  const partnerAnimal = getZodiacAnimal(partner.birthYear);
-
-  const mbtiScore = calcMbtiScore(myProfile.mbti, partner.mbti);
-  const starScore = calcStarScore(myStar, partnerStar);
-  const zodiacScore = calcZodiacScore(myAnimal, partnerAnimal);
-  const ageScore = calcAgeGapScore(myProfile.birthYear, partner.birthYear);
-  const regionScore = calcRegionScore(myProfile.region, partner.region);
-  const sajuBase = calcSajuBaseScore(myProfile, partner);
-
-  const total = mbtiScore + starScore + zodiacScore + ageScore + regionScore + sajuBase.total;
-
-  return {
-    total,
-    mbtiScore,
-    starScore,
-    zodiacScore,
-    ageScore,
-    regionScore,
-    sajuBaseScore: sajuBase.total,
-    sajuBase,
-    myStar,
-    partnerStar,
-    myAnimal,
-    partnerAnimal
-  };
-}
-    loadProfileDraft();
-applyAppMode();
-  </script>
-</body>
-</html>
-
