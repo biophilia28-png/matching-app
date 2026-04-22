@@ -2465,6 +2465,13 @@ function closeChat() {
   document.getElementById("chat-panel").style.display = "none";
 }
 
+function getTime() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2, "0");
+  const m = now.getMinutes().toString().padStart(2, "0");
+  return `${h}:${m}`;
+}
+
 function sendChatMessage() {
   const input = document.getElementById("chat-input");
   const messages = document.getElementById("chat-messages");
@@ -2473,8 +2480,11 @@ function sendChatMessage() {
   if (!text) return;
 
   messages.innerHTML += `
+  <div class="chat-row me">
     <div class="chat-bubble me">${text}</div>
-  `;
+    <div class="chat-time">${getTime()}</div>
+  </div>
+`;
   input.value = "";
 
   messages.scrollTop = messages.scrollHeight;
