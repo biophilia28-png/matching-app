@@ -1817,12 +1817,12 @@ function renderMatchingResults(myProfile, matches) {
 const chatLabel = s.total >= chatThreshold ? "채팅 가능" : "채팅 잠김";
 const isChatEnabled = s.total >= chatThreshold;
 
-    const relationTags = [
-      s.branchCombo.yearPair.type,
-      s.branchCombo.monthPair.type,
-      s.branchCombo.dayPair.type,
-      s.tenGod.dayType
-    ].filter(Boolean).slice(0, 4);
+   const relationTags = [
+  s.myStar,
+  s.partnerStar,
+  s.myAnimal,
+  s.partnerAnimal
+].filter(Boolean).slice(0, 4);
 
     return `
       <div class="match-card">
