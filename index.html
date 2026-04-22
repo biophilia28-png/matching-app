@@ -785,55 +785,25 @@
       <div class="hero-card">
         <div class="eyebrow">궁합 기반 파트너 매칭</div>
         <h1 class="hero-title">별자리궁합 · 사주팔자궁합 · MBTI 궁합 매칭앱</h1>
-        <p class="hero-desc">
-          성인 남녀가 더 잘 맞는 상대를 찾을 수 있도록,
-          사주팔자와 MBTI, 별자리 궁합을 함께 반영하는 매칭 구조로 정리합니다.
-          화면은 단순하게, 매칭 기준은 더 정교하게 구성합니다.
-        </p>
-
-        <div class="hero-highlight">
-          <div class="pill">성인 전용</div>
-          <div class="pill">출생시간 입력</div>
-          <div class="pill">좋은 궁합 우선</div>
-        </div>
 
         <div class="hero-actions">
           <button class="btn btn-primary" onclick="showScreen('profile')">시작하기</button>
           <button class="btn btn-secondary" onclick="showScreen('matching')">매칭 보기</button>
         </div>
 
-        <div class="notice-row">
-          <div class="notice">
-            <strong>안내</strong><br />
-            실제 출시 전에는 PASS, 한국모바일인증, 카카오/네이버/구글 등 본인확인 연동을 붙일 자리로 확장합니다.
-          </div>
-          <div class="notice">
-            <strong>중요</strong><br />
-            현재 화면은 내부 전환 방식으로 구성되어 C:/, file:///, 로컬 PC 경로로 이동하지 않게 설계합니다.
-          </div>
-        </div>
-      </div>
+      
 
       <h2 class="section-title">앱 핵심 방향</h2>
       <p class="section-sub">
-        소개팅/주선/지인 연결에서 궁합이 맞지 않아 시간과 체력을 낭비하는 문제를 줄이는 방향으로 설계합니다.
-      </p>
-
+    
       <div class="grid-2">
         <div class="card">
           <strong>복잡한 기준은 내부에서</strong>
-          <div class="helper" style="margin-top:8px;">
-            사주팔자 · MBTI · 별자리 · 나이차 · 지역 조건은 내부적으로 종합 계산하고,
-            사용자 화면은 단순한 결과 중심으로 보이게 합니다.
-          </div>
         </div>
 
         <div class="card">
           <strong>사용은 최대한 단순하게</strong>
-          <div class="helper" style="margin-top:8px;">
-            모바일에서도 글씨가 작고 단정하게 보이도록 정리하고,
-            핵심 버튼이 하단 링크에 가려지지 않도록 구성합니다.
-          </div>
+      
         </div>
       </div>
 
@@ -954,17 +924,8 @@
           <div class="option-row" id="adult-options">
             <button type="button" class="chip" data-group="adult" data-value="yes">본인은 성인입니다</button>
           </div>
-          <div class="helper">
-            실제 출시 시 PASS / 한국모바일인증 / SNS 본인확인 연동 자리로 확장 예정
-          </div>
-        </div>
-
-        <div class="summary-box">
-          입력값은 이후 매칭 엔진에서
-          <strong>별자리 궁합 / MBTI 궁합 / 사주팔자 년월일시 기반 비교</strong>에 반영됩니다.
-          세부 항목은 번호별 블록으로 분리해 수정 가능하게 구성할 예정입니다.
-        </div>
-
+    
+     
         <div class="hero-actions" style="margin-top:16px;">
           <button class="btn btn-primary" onclick="saveProfileDraft()">프로필 저장</button>
           <button class="btn btn-secondary" onclick="showScreen('matching')">매칭 화면으로</button>
@@ -990,36 +951,17 @@
           <button class="btn btn-secondary" onclick="resetMatchingBox()">결과 초기화</button>
         </div>
 
-        <div class="summary-box" id="matching-summary">
-          아직 궁합 계산 전입니다.<br />
-          다음 블록에서 MBTI, 별자리, 띠궁합, 사주 심화 엔진을 연결할 예정입니다.
-        </div>
+   <div class="summary-box" id="matching-summary">
+  궁합 계산을 실행하면 결과가 표시됩니다.
+</div>
 
-        <div class="match-list" id="match-list">
-          <div class="empty-box">
-            아직 표시할 매칭 결과가 없습니다.<br />
-            프로필 저장 후 궁합 계산을 실행하면 여기에 결과가 표시됩니다.
-          </div>
-        </div>
-      </div>
+<div class="match-list" id="match-list">
+  <div class="empty-box">
+    궁합 계산 결과가 여기에 표시됩니다.
+  </div>
+</div>
 
-      <div class="card">
-        <strong>매칭 엔진 연결 예정 항목</strong>
-        <div class="mypage-list">
-          <div class="mypage-item">
-            <strong>1) 기본 궁합</strong>
-            <p>MBTI / 별자리 / 기본 띠궁합 / 나이차 / 지역 필터</p>
-          </div>
-          <div class="mypage-item">
-            <strong>2) 사주 심화 엔진</strong>
-            <p>년월일시 / 형충회합 / 12운성 / 신살 / 십성 / 20년 구간 점수</p>
-          </div>
-          <div class="mypage-item">
-            <strong>3) 최종 결과</strong>
-            <p>총점 / 간단 코멘트 / 채팅 가능 여부 / 우선 추천 상대 정렬</p>
-          </div>
-        </div>
-      </div>
+</div> 
     </section>
 
     <!-- =========================================================
@@ -1827,4 +1769,3 @@ applyAppMode();
   </script>
 </body>
 </html>
-
