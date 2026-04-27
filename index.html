@@ -31,7 +31,7 @@
         <p class="mini-title left">오늘의 추천 궁합</p>
         <h2>궁합 좋은 상대와<br>바로 대화를 시작하세요</h2>
       </div>
-      <span class="version-pill">v1.0.0</span>
+     
     </div>
 
     <div class="best-match">
@@ -354,14 +354,21 @@
         <p>일반 사용자에게는 숨겨진 관리자 화면입니다.</p>
       </div>
 
-      <section class="admin-grid">
-        <div><span>오늘 가입자</span><strong>152명</strong></div>
-        <div><span>전체 가입자</span><strong>12,458명</strong></div>
-        <div><span>남성</span><strong>6,248명</strong></div>
-        <div><span>여성</span><strong>6,210명</strong></div>
-        <div><span>실시간 접속자</span><strong>1,024명</strong></div>
-        <div><span>오늘 채팅 수</span><strong>3,256건</strong></div>
-      </section>
+<section class="admin-grid">
+  <div><span>오늘 가입자</span><strong id="adminTodayUsers">0명</strong></div>
+  <div><span>전체 가입자</span><strong id="adminTotalUsers">0명</strong></div>
+  <div><span>10대</span><strong id="adminAge10">0명</strong></div>
+  <div><span>20대</span><strong id="adminAge20">0명</strong></div>
+  <div><span>30대</span><strong id="adminAge30">0명</strong></div>
+  <div><span>40대</span><strong id="adminAge40">0명</strong></div>
+  <div><span>50대 이상</span><strong id="adminAge50">0명</strong></div>
+  <div><span>현재 접속자</span><strong id="adminOnlineUsers">0명</strong></div>
+</section>
+
+<section class="admin-chat-stats">
+  <h3>시간대별 채팅 데이터</h3>
+  <div id="adminChatHourly"></div>
+</section>
     </main>
 
     <!-- 11. 하단 메뉴 -->
