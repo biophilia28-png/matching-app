@@ -34,8 +34,9 @@ function saveProfile() {
 
   localStorage.setItem("profile", JSON.stringify(profile));
   alert("프로필 저장 완료");
-  renderMatches();
-  goScreen("matches");
+renderMatches();
+renderHomeProfile();
+goScreen("matches");
 }
 
 function checkRegionByLocation(region) {
@@ -232,9 +233,10 @@ function openAdminGate() {
   const pw = prompt("관리자 비밀번호를 입력하세요.");
   const adminPassword = "246897";
 
-  if (pw && pw.trim() === adminPassword) {
-    goScreen("admin");
-  } else {
+ if (pw && pw.trim() === adminPassword) {
+  renderAdminStats();
+  goScreen("admin");
+ } else {
     alert("관리자 비밀번호가 맞지 않습니다.");
   }
 }
@@ -248,6 +250,7 @@ window.onload = function () {
   renderChatRooms();
   renderHomeRecentChat();
   renderHomeChatRoomList();
+  renderHomeProfile();
 };
 
 function getRecentChatRoom() {
@@ -331,4 +334,95 @@ function renderHomeChatRoomList() {
       </div>
     </div>
   `).join("");
+}
+
+function renderHomeProfile() {
+  const profile = loadProfile();
+  if (!profile) return;
+
+  const homeNameEls = document.querySelectorAll(".profile-small span");
+
+  if (homeNameEls[0]) {
+    homeNameEls[0].innerText = profile.nickname || "나";
+  }
+}
+
+function renderAdminStats() {
+  const profile = loadProfile();
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
+  let totalUsers = 12458;
+  let todayUsers = 152;
+  let onlineUsers = 1024;
+
+  let age10 = 3;
+  let age20 = 38;
+  let age30 = 42;
+  let age40 = 14;
+  let age50 = 3;
+
+  if (profile && profile.birthYear) {
+    const age = currentYear - Number(profile.birthYear);
+    totalUsers += 1;
+    todayUsers += 1;
+    onlineUsers += 1;
+
+    if (age < 20) age10 += 1;
+    else if (age < 30) age20 += 1;
+    else if (age < 40) age30 += 1;
+    else if (age < 50) age40 += 1;
+    else age50 += 1;
+  }
+
+  setText("adminTodayUsers", todayUsers + "명");
+  setText("adminTotalUsers", totalUsers.toLocaleString() + "명");
+  setText("adminAge10", age10 + "%");
+  setText("adminAge20", age20 + "%");
+  setText("adminAge30", age30 + "%");
+  setText("adminAge40", age40 + "%");
+  setText("adminAge50", age50 + "%");
+  setText("adminOnlineUsers", onlineUsers.toLocaleString() + "명");
+
+  renderAdminChatHourly();
+}
+
+function renderAdminChatHourly() {
+  const box = document.getElementById("adminChatHourly");
+  if (!box) return;
+
+  const rooms = JSON.parse(localStorage.getItem("chatRooms") || "[]");
+
+  const hours = {};
+  for (let i = 0; i < 24; i++) {
+    hours[i] = 0;
+  }
+
+  rooms.forEach(room => {
+    const hourText = String(room.time || "").match(/(\d{1,2})/);
+    if (hourText) {
+      const h = Number(hourText[1]);
+      if (!Number.isNaN(h)) hours[h] += 1;
+    }
+  });
+
+  box.innerHTML = Object.keys(hours).map(h => {
+    const count = hours[h];
+    const width = Math.min(100, count * 20);
+
+    return `
+      <div class="hour-row">
+        <span>${h}시</span>
+        <div class="hour-bar-bg">
+          <div class="hour-bar-fill" style="width:${width}%"></div>
+        </div>
+        <strong>${count}건</strong>
+      </div>
+    `;
+  }).join("");
+}
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.innerText = text;
 }
