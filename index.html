@@ -2,2517 +2,389 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
-  <title>궁합 매칭앱</title>
-
-  <!-- =========================================================
-       01. 기본 메타 / 제목
-       - 단일 index.html 통합본
-       - 외부 html 이동 최소화
-       - 내부 화면 전환 방식으로 구성
-  ========================================================== -->
-
-  <style>
-.chat-messages {
-  background: #1a1f29 !important;
-}
-
-.chat-bubble {
-  color: #111 !important;
-}
-
-.chat-bubble.me {
-  background: #ffe066;
-  color: #111 !important;
-}
-
-.chat-bubble.other {
-  background: #2a3140;
-  color: #fff !important;
-}
-
-#chat-input {
-  background: #fff !important;
-  color: #111 !important;
-}
-.chat-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  margin: 6px 0;
-}
-
-.chat-row.me {
-  justify-content: flex-end;
-}
-
-.chat-row.other {
-  justify-content: flex-start;
-}
-
-.chat-time {
-  font-size: 10px;
-  color: #aaa;
-}
-    /* =========================================================
-       02. 공통 스타일
-       - 모바일 우선
-       - 난잡하지 않게 카드형 레이아웃
-       - 핵심 버튼 우선
-       - 하단 링크는 작고 방해되지 않게
-    ========================================================== */
-
-    :root {
-      --bg: #111318;
-      --card: #1a1f29;
-      --card-2: #202734;
-      --line: #2e3748;
-      --text: #eef2f7;
-      --sub: #9aa6b6;
-      --point: #f2687f;
-      --point-2: #8d7bff;
-      --ok: #3ecf8e;
-      --warn: #ffb84d;
-      --danger: #ff6b6b;
-      --shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
-      --max: 760px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: linear-gradient(180deg, #0e1116 0%, #151a21 100%);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", Arial, sans-serif;
-      min-height: 100%;
-    }
-
-    body {
-      padding-bottom: 84px;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button, input, select, textarea {
-      font: inherit;
-    }
-
-    .app {
-      width: 100%;
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 16px 14px 120px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      backdrop-filter: blur(12px);
-      background: rgba(17, 19, 24, 0.82);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .topbar-inner {
-      width: 100%;
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .brand-title {
-      font-size: 17px;
-      font-weight: 800;
-      letter-spacing: -0.2px;
-    }
-
-    .brand-sub {
-      font-size: 11px;
-      color: var(--sub);
-    }
-
-    .status-badge {
-      padding: 7px 11px;
-      border: 1px solid rgba(242,104,127,0.25);
-      background: rgba(242,104,127,0.12);
-      color: #ffd3db;
-      border-radius: 999px;
-      font-size: 11px;
-      white-space: nowrap;
-    }
-
-    .screen {
-      display: none;
-      animation: fadeIn 0.22s ease;
-    }
-
-    .screen.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(4px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .hero-card,
-    .card {
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border: 1px solid rgba(255,255,255,0.06);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius-lg);
-    }
-
-    .hero-card {
-      padding: 22px 18px;
-      margin-top: 14px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .hero-card::before {
-      content: "";
-      position: absolute;
-      width: 180px;
-      height: 180px;
-      right: -40px;
-      top: -40px;
-      background: radial-gradient(circle, rgba(141,123,255,0.18), transparent 68%);
-      pointer-events: none;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      color: #d7deea;
-      font-size: 12px;
-      margin-bottom: 12px;
-    }
-
-    .hero-title {
-      margin: 0;
-      font-size: 27px;
-      line-height: 1.24;
-      letter-spacing: -0.8px;
-      font-weight: 900;
-    }
-
-    .hero-desc {
-      margin: 12px 0 0;
-      color: var(--sub);
-      font-size: 14px;
-      line-height: 1.65;
-    }
-
-    .hero-highlight {
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .pill {
-      text-align: center;
-      padding: 10px 8px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.05);
-      border-radius: 999px;
-      font-size: 12px;
-      color: #dfe5ef;
-    }
-
-    .hero-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    .btn {
-      border: none;
-      border-radius: 14px;
-      padding: 14px 14px;
-      cursor: pointer;
-      font-weight: 800;
-      transition: transform 0.12s ease, opacity 0.12s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.985);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--point), #ff8ca0);
-      color: white;
-    }
-
-    .btn-secondary {
-      background: rgba(255,255,255,0.06);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.07);
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--sub);
-      border: 1px solid rgba(255,255,255,0.09);
-    }
-
-    .notice-row {
-      display: grid;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .notice {
-      padding: 13px 14px;
-      border-radius: var(--radius-md);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.05);
-      font-size: 13px;
-      line-height: 1.55;
-      color: #d7dfeb;
-    }
-
-    .section-title {
-      margin: 24px 0 10px;
-      font-size: 17px;
-      font-weight: 900;
-      letter-spacing: -0.2px;
-    }
-
-    .section-sub {
-      margin: 0 0 12px;
-      color: var(--sub);
-      font-size: 13px;
-      line-height: 1.55;
-    }
-
-    .grid-2,
-    .grid-3 {
-      display: grid;
-      gap: 10px;
-    }
-
-    .grid-2 {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .grid-3 {
-      grid-template-columns: repeat(3, 1fr);
-    }
-
-    .card {
-      padding: 16px;
-      margin-top: 12px;
-    }
-
-    .field-wrap {
-      margin-top: 12px;
-    }
-
-    .label {
-      display: block;
-      margin-bottom: 7px;
-      font-size: 12px;
-      color: #cfd7e3;
-      font-weight: 700;
-    }
-
-    .req {
-      color: #ff98aa;
-      margin-left: 2px;
-    }
-
-    .input,
-    .select,
-    .textarea {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 13px;
-      outline: none;
-    }
-
-    .input::placeholder,
-    .textarea::placeholder {
-      color: #7f8b9b;
-    }
-
-    .textarea {
-      min-height: 96px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-
-    .helper {
-      margin-top: 6px;
-      color: var(--sub);
-      font-size: 11px;
-      line-height: 1.45;
-    }
-
-    .option-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .chip {
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      color: #dbe2ec;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .chip.active {
-      background: rgba(242,104,127,0.16);
-      border-color: rgba(242,104,127,0.33);
-      color: #ffd9e0;
-    }
-
-    .divider {
-      margin: 18px 0;
-      border-top: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .summary-box {
-      margin-top: 12px;
-      padding: 14px;
-      border-radius: var(--radius-md);
-      background: linear-gradient(180deg, rgba(141,123,255,0.08), rgba(242,104,127,0.08));
-      border: 1px solid rgba(255,255,255,0.08);
-      font-size: 13px;
-      line-height: 1.65;
-      color: #eef2fb;
-    }
-
-    .match-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .match-card {
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.025));
-      border: 1px solid rgba(255,255,255,0.07);
-      padding: 16px;
-    }
-
-    .match-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .match-name {
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: -0.2px;
-    }
-
-    .score-badge {
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .score-high {
-      background: rgba(62,207,142,0.14);
-      color: #8df2bf;
-      border: 1px solid rgba(62,207,142,0.25);
-    }
-
-    .score-mid {
-      background: rgba(255,184,77,0.14);
-      color: #ffd28d;
-      border: 1px solid rgba(255,184,77,0.25);
-    }
-
-    .score-low {
-      background: rgba(255,107,107,0.12);
-      color: #ffb0b0;
-      border: 1px solid rgba(255,107,107,0.24);
-    }
-
-    .mini-info {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px;
-      margin-bottom: 10px;
-    }
-
-    .mini-info span {
-      font-size: 11px;
-      color: #cfd7e3;
-      padding: 7px 9px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-    }
-
-    .match-desc {
-      color: var(--sub);
-      font-size: 13px;
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-
-    .inline-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .btn-sm {
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .empty-box {
-      margin-top: 12px;
-      padding: 18px 14px;
-      border-radius: 16px;
-      border: 1px dashed rgba(255,255,255,0.13);
-      color: var(--sub);
-      text-align: center;
-      line-height: 1.6;
-      font-size: 13px;
-    }
-
-    .mypage-list {
-      display: grid;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .mypage-item {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .mypage-item strong {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .mypage-item p {
-      margin: 0;
-      color: var(--sub);
-      font-size: 12px;
-      line-height: 1.6;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 50;
-      background: rgba(12, 14, 19, 0.93);
-      backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
-    }
-
-    .bottom-nav-inner {
-      width: 100%;
-      max-width: var(--max);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-
-    .nav-btn {
-      min-height: 52px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(255,255,255,0.03);
-      color: #cfd7e3;
-      border-radius: 16px;
-      font-size: 11px;
-      font-weight: 800;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      cursor: pointer;
-    }
-
-    .nav-btn.active {
-      background: rgba(242,104,127,0.16);
-      border-color: rgba(242,104,127,0.26);
-      color: #ffe0e6;
-    }
-
-    .footer-links {
-      margin-top: 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 8px;
-      justify-content: center;
-    }
-
-    .footer-link {
-      font-size: 11px;
-      color: #8f9bad;
-      padding: 6px 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-
-    .contact-box {
-      margin-top: 10px;
-      color: #97a4b5;
-      font-size: 11px;
-      text-align: center;
-      line-height: 1.6;
-    }
-
-    .modal-dim {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: rgba(0,0,0,0.62);
-      padding: 18px 14px;
-      align-items: flex-end;
-    }
-
-    .modal-dim.open {
-      display: flex;
-    }
-
-    .modal {
-      width: 100%;
-      max-width: var(--max);
-      margin: 0 auto;
-      background: #171c24;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px 24px 0 0;
-      max-height: 82vh;
-      overflow: auto;
-      box-shadow: var(--shadow);
-    }
-
-    .modal-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 16px 16px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .modal-title {
-      font-size: 16px;
-      font-weight: 900;
-    }
-
-    .modal-close {
-      border: none;
-      background: rgba(255,255,255,0.06);
-      color: white;
-      border-radius: 12px;
-      padding: 9px 12px;
-      cursor: pointer;
-    }
-
-    .modal-body {
-      padding: 16px;
-      color: #d8e0eb;
-      font-size: 13px;
-      line-height: 1.75;
-    }
-
-    .warn-text {
-      color: #ffd08c;
-    }
-
-    .danger-text {
-      color: #ffb0b0;
-    }
-
-    .ok-text {
-      color: #9ff1c7;
-    }
-
-    @media (max-width: 520px) {
-      .hero-title {
-        font-size: 24px;
-      }
-
-      .hero-highlight {
-        grid-template-columns: 1fr;
-      }
-
-      .grid-2,
-      .grid-3 {
-        grid-template-columns: 1fr;
-      }
-
-      .hero-actions {
-        grid-template-columns: 1fr;
-      }
-    }
-
-/* =========================================================
-   02-A. 사용자모드 / 관리자모드 스타일
-========================================================== */
-
-.admin-only {
-  display: none;
-}
-
-.user-only {
-  display: block;
-}
-
-.mode-panel {
-  margin-top: 12px;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(141,123,255,0.08);
-  border: 1px solid rgba(141,123,255,0.16);
-  color: #e8e4ff;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-.admin-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-.admin-box {
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
-}
-
-.admin-box strong {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.admin-box p {
-  margin: 0;
-  color: var(--sub);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.admin-stat-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.admin-stat {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-}
-
-.admin-stat span:first-child {
-  color: #dfe6f0;
-  font-size: 12px;
-}
-
-.admin-stat span:last-child {
-  font-weight: 900;
-  font-size: 14px;
-}
-
-.hidden {
-  display: none !important;
-}
-
-@media (max-width: 520px) {
-  .admin-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 🔥 강제 적용 */
-select,
-select option,
-.field-wrap select {
-  color: #000 !important;
-  background-color: #fff !important;
-}
-
-/* 🔥 입력창 글씨색 */
-input,
-textarea {
-  color: #000 !important;
-  background: #fff !important;
-}
-
-/* 🔥 MBTI / 선택 버튼 */
-.chip {
-  color: #000 !important;
-  background: #fff !important;
-}
-
-/* 🔥 선택된 상태 */
-.chip.active {
-  background: #2687ff !important;
-  color: #fff !important;
-}
-/* ▼▼▼ MBTI / 지역 드롭다운 색상 수정 ▼▼▼ */
-select,
-.select,
-#mbti,
-#region {
-  color: #111 !important;
-  background: #fff !important;
-  -webkit-text-fill-color: #111 !important;
-}
-
-select option,
-.select option,
-#mbti option,
-#region option {
-  color: #111 !important;
-  background: #fff !important;
-}
-
-select:invalid,
-.select:invalid {
-  color: #111 !important;
-}
-
-/* 입력창 유지 */
-input,
-textarea {
-  color: #eef2f7 !important;
-  background: rgba(255,255,255,0.04) !important;
-}
-
-/* 버튼형 선택 */
-.chip {
-  color: #000 !important;
-  background: #fff !important;
-}
-
-.chip.active {
-  background: #2687ff !important;
-  color: #fff !important;
-}
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>별자리궁합 · 사주팔자궁합 · MBTI 궁합 매칭앱</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
+  <div id="app">
 
-  <!-- =========================================================
-       03. 상단바
-       - 앱 목적을 짧고 명확하게 노출
-       - 개발자용 정보는 숨기고 사용자용 문구만 유지
-  ========================================================== -->
-  <header class="topbar">
-    <div class="topbar-inner">
-  <div class="brand">
-    <div class="brand-title">궁합 매칭앱</div>
-    <div class="brand-sub">별자리궁합 · 사주팔자궁합 · MBTI 궁합</div>
-  </div>
-
-  <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
-    <div class="status-badge" id="mode-badge">사용자모드</div>
-    <button class="btn btn-ghost btn-sm" type="button" onclick="setAppMode('user')">사용자</button>
-    <button class="btn btn-secondary btn-sm" type="button" onclick="setAppMode('admin')">관리자</button>
-  </div>
-</div>
-  </header>
-
-  <main class="app">
-
-    <!-- =========================================================
-         04. 홈 화면
-         - 첫 화면 단순화
-         - 잘못된 외부 링크 없이 내부 버튼만 사용
-    ========================================================== -->
-    <section id="screen-home" class="screen active">
-      <div class="hero-card">
-        <div class="eyebrow">궁합 기반 파트너 매칭</div>
-        <h1 class="hero-title">별자리궁합 · 사주팔자궁합 · MBTI 궁합 매칭앱</h1>
-
-        <div class="hero-actions">
-          <button class="btn btn-primary" onclick="showScreen('profile')">시작하기</button>
-          <button class="btn btn-secondary" onclick="showScreen('matching')">매칭 보기</button>
+    <!-- 01. 상단 -->
+    <header class="app-header">
+      <div class="brand-row">
+        <div class="app-icon">
+          <img src="./assets/app-icon.png" alt="앱 아이콘" />
         </div>
-
-      
-
-  
-      <div class="footer-links">
-        <button class="footer-link" onclick="openModal('terms')">이용약관</button>
-        <button class="footer-link" onclick="openModal('privacy')">개인정보처리방침</button>
-        <button class="footer-link" onclick="openModal('report')">신고/차단 정책</button>
-        <button class="footer-link" onclick="openModal('contact')">문의하기</button>
-        <button class="footer-link" onclick="openModal('delete')">계정 삭제 안내</button>
+        <div>
+          <h1>별자리궁합</h1>
+          <p>사주 · 별자리 · MBTI 궁합 매칭 앱</p>
+        </div>
       </div>
+    </header>
 
-      <div class="contact-box">
-        고객센터: philosophia6@naver.com
+    <!-- 02. 홈 화면 -->
+<main class="screen active" id="screen-home">
+  <section class="home-card home-chat-combo">
+    <div class="home-title-row">
+      <div>
+        <p class="mini-title left">오늘의 추천 궁합</p>
+        <h2>궁합 좋은 상대와<br>바로 대화를 시작하세요</h2>
       </div>
-    </section>
-
-    <!-- =========================================================
-         05. 가입 / 프로필 입력 화면
-         - 생년월일 + 출생시간 포함
-         - 미성년 차단 구조 자리 포함
-         - 수정 쉬운 입력 구획으로 분리
-    ========================================================== -->
-    <section id="screen-profile" class="screen">
-      <h2 class="section-title">가입 / 프로필 입력</h2>
-      <p class="section-sub">
-        사주 궁합 반영을 위해 출생연월일과 출생시간을 입력받는 구조입니다.
-      </p>
-
-      <div class="card">
-        <div class="field-wrap">
-          <label class="label" for="nickname">닉네임<span class="req">*</span></label>
-          <input id="nickname" class="input" type="text" placeholder="예: 별빛남, 진실한연결" />
-        </div>
-
-        <div class="grid-2">
-          <div class="field-wrap">
-            <label class="label">성별<span class="req">*</span></label>
-            <div class="option-row" id="gender-options">
-              <button type="button" class="chip" data-group="gender" data-value="male">남성</button>
-              <button type="button" class="chip" data-group="gender" data-value="female">여성</button>
-            </div>
-          </div>
-
-          <div class="field-wrap">
-            <label class="label">MBTI<span class="req">*</span></label>
-            <select id="mbti" class="select">
-              <option value="">선택</option>
-              <option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option>
-              <option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option>
-              <option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option>
-              <option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="grid-2">
-          <div class="field-wrap">
-            <label class="label" for="birth-year">출생연도<span class="req">*</span></label>
-            <input id="birth-year" class="input" type="number" placeholder="예: 1991" min="1900" max="2099" />
-            <div class="helper">성인 이용 기준 확인에 사용됩니다.</div>
-          </div>
-
-          <div class="field-wrap">
-            <label class="label" for="birth-month">출생월<span class="req">*</span></label>
-            <input id="birth-month" class="input" type="number" placeholder="1~12" min="1" max="12" />
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field-wrap">
-            <label class="label" for="birth-day">출생일<span class="req">*</span></label>
-            <input id="birth-day" class="input" type="number" placeholder="1~31" min="1" max="31" />
-          </div>
-
-          <div class="field-wrap">
-            <label class="label" for="birth-hour">출생시간(시)<span class="req">*</span></label>
-            <input id="birth-hour" class="input" type="number" placeholder="0~23" min="0" max="23" />
-            <div class="helper">사주팔자 년월일시 계산 반영용</div>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="field-wrap">
-            <label class="label" for="region">지역<span class="req">*</span></label>
-            <select id="region" class="select">
-              <option value="">선택</option>
-              <option>서울 강남</option>
-              <option>서울 서초</option>
-              <option>서울 송파</option>
-              <option>서울 강동</option>
-              <option>성남</option>
-              <option>인천</option>
-              <option>수원</option>
-              <option>대전</option>
-              <option>대구</option>
-              <option>부산</option>
-              <option>광주</option>
-              <option>울산</option>
-              <option>기타</option>
-            </select>
-          </div>
-
-          <div class="field-wrap">
-            <label class="label" for="job">직업 / 활동분야</label>
-            <input id="job" class="input" type="text" placeholder="예: 사무직, 자영업, 개발, 교육" />
-          </div>
-        </div>
-
-        <div class="field-wrap">
-          <label class="label" for="intro">자기소개</label>
-          <textarea id="intro" class="textarea" placeholder="간단한 자기소개, 원하는 만남 방향, 생활 패턴 등을 적어주세요."></textarea>
-        </div>
-
-        <div class="field-wrap">
-          <label class="label">성인 확인<span class="req">*</span></label>
-          <div class="option-row" id="adult-options">
-            <button type="button" class="chip" data-group="adult" data-value="yes">본인은 성인입니다</button>
-          </div>
-  </div>
-
-<div class="hero-actions" style="margin-top:16px;">
-  <button class="btn btn-primary" onclick="saveProfileDraft()">프로필 저장</button>
-  <button class="btn btn-secondary" onclick="showScreen('matching')">매칭 화면으로</button>
-</div>
-</div>
-</section>
-
-    <!-- =========================================================
-         06. 매칭 화면 UI
-         - 아직 계산 엔진 전 단계
-         - 결과 카드 / 빈 상태 / 버튼 구조만 먼저 배치
-         - 테스트 채팅 기능은 제외
-    ========================================================== -->
-   <section id="screen-matching" class="screen">
-  <h2 class="section-title">매칭 결과</h2>
-  <p class="section-sub">
-    좋은 궁합 상대를 우선 노출하고, 점수 낮은 경우는 대화 추천을 제한하는 방향으로 연결합니다.
-  </p>
-
-  <div class="card">
-    <div class="grid-2">
-      <button class="btn btn-primary" onclick="runMatchingDemo()">궁합 계산 실행</button>
-      <button class="btn btn-secondary" onclick="resetMatchingBox()">결과 초기화</button>
+      <span class="version-pill">v1.0.0</span>
     </div>
 
-    <div class="summary-box" id="matching-summary">
-      궁합 계산을 실행하면 결과가 표시됩니다.
+    <div class="best-match">
+      <div class="profile-small">
+        <img src="./assets/profile-man.png" alt="내 프로필" />
+        <span>나</span>
+      </div>
+      <div class="heart-score"><span>92점</span></div>
+      <div class="profile-small">
+        <img src="./assets/profile-woman.png" alt="상대 프로필" />
+        <span>추천 상대</span>
+      </div>
     </div>
 
-   <div class="match-list" id="match-list">
-  <div class="empty-box">
-    궁합 계산 결과가 여기에 표시됩니다.
+<div class="home-quick-chat">
+  <div class="chat-preview-head">
+    <strong>최근 대화</strong>
+    <span>15일 후 자동 삭제 안내</span>
   </div>
+
+  <div id="homeRecentChat">
+    <div class="chat-bubble other">아직 최근 대화가 없습니다.</div>
+  </div>
+
+  <button class="sub-btn" onclick="openRecentChatFromHome()">
+    최근 대화상대와 대화하기
+  </button>
 </div>
 
-<div id="chat-panel" class="chat-panel" style="display:none;">
-  <div class="chat-panel-header">
-    <strong id="chat-title">채팅창</strong>
-    <button class="btn btn-sm btn-ghost" type="button" onclick="closeChat()">닫기</button>
+    <button class="primary-btn" onclick="goScreen('matches')">추천 궁합 목록 보기</button>
+    <button class="sub-btn" onclick="goScreen('chatList')">진행중인 채팅방</button>
+  </section>
+
+  <section class="notice-card">
+    <strong>안전 안내</strong>
+    <p>
+      앱 채팅은 성인 인증 완료 사용자만 이용할 수 있습니다.
+      외부 메신저 유도, 조건만남, 금전 요구, 범죄 의심 문구는 자동 차단됩니다.
+    </p>
+  </section>
+<section class="home-chat-list">
+  <div class="chat-preview-head">
+    <strong>최근 채팅방</strong>
+    <span>홈에서 바로 대화 가능</span>
   </div>
 
-  <div id="chat-messages" class="chat-messages">
-    <div class="empty-box">대화를 시작해보세요.</div>
-  </div>
-
-  <div class="chat-input-row">
-    <input id="chat-input" type="text" placeholder="메시지를 입력하세요" />
-    <button class="btn btn-sm btn-secondary" type="button" onclick="sendChatMessage()">전송</button>
-  </div>
-</div>
+  <div id="homeChatRoomList">
+    <div class="match-card">
+      <h3>진행중인 채팅방 없음</h3>
+      <p>궁합 상세 페이지에서 채팅을 시작하면 여기에 표시됩니다.</p>
     </div>
   </div>
 </section>
+</main>
 
-    <!-- =========================================================
-         07. 마이페이지
-         - 추후 신고/차단/문의/삭제 안내 연결
-         - 채팅 테스트 기능 제외
-    ========================================================== -->
-    <section id="screen-mypage" class="screen">
-      <h2 class="section-title">마이페이지</h2>
-      <p class="section-sub">
-        내 입력 정보와 서비스 안내 항목을 확인하는 화면입니다.
-      </p>
+    <!-- 03. 추천 궁합 목록 -->
+    <main class="screen" id="screen-matches">
+      <div class="screen-title">
+        <h2>추천 궁합 목록</h2>
+        <p>50점 이상만 프로필 열람 및 채팅 연결이 가능합니다.</p>
+      </div>
 
-      <div class="card">
-        <div class="mypage-list">
-          <div class="mypage-item">
-            <strong>내 프로필 요약</strong>
-            <p id="mypage-profile-summary">
-              아직 저장된 프로필이 없습니다.
-            </p>
+      <div class="filter-tabs">
+        <button class="tab active">전체</button>
+        <button class="tab">50점 이상</button>
+        <button class="tab">접속중</button>
+      </div>
+
+      <section id="matchList" class="match-list"></section>
+    </main>
+
+    <!-- 04. 궁합 상세 -->
+    <main class="screen" id="screen-detail">
+      <div class="detail-top">
+        <button class="back-btn" onclick="goScreen('matches')">‹</button>
+        <h2>궁합 상세 페이지</h2>
+      </div>
+
+      <section class="detail-card">
+        <div class="detail-users">
+          <div>
+            <img src="./assets/profile-man.png" alt="나" />
+            <span>나</span>
           </div>
 
-          <div class="mypage-item">
-            <strong>매칭 정책</strong>
-            <p>
-              좋은 궁합 상대를 우선 추천하며, 기준 점수 미달 시 대화 연결을 제한하는 방향으로 구성합니다.
-            </p>
+          <div class="big-heart">
+            <strong id="detailTotalScore">82점</strong>
           </div>
 
-          <div class="mypage-item">
-            <strong>채팅 기능</strong>
-            <p>
-              이번 통합본에서는 테스트 채팅을 제외하고, 구조와 궁합 엔진 정리에 집중합니다.
-            </p>
-          </div>
-
-          <div class="mypage-item">
-            <strong>고객센터</strong>
-            <p>
-              문의 메일: philosophia6@naver.com
-            </p>
+          <div>
+            <img src="./assets/profile-woman.png" alt="상대" />
+            <span id="detailPartnerName">지우</span>
           </div>
         </div>
 
-        <div class="hero-actions" style="margin-top:16px;">
-          <button class="btn btn-secondary" onclick="openModal('report')">신고/차단 정책</button>
-          <button class="btn btn-secondary" onclick="openModal('delete')">계정 삭제 안내</button>
+        <div class="score-box">
+          <h3>종합 궁합 점수</h3>
+          <p><strong id="detailGrade">좋은 궁합</strong></p>
+          <p id="detailReason">
+            사주, MBTI, 별자리 궁합을 종합하여 계산한 결과입니다.
+          </p>
         </div>
-      </div>
-    </section>
 
-<!-- =========================================================
-     07-A. 관리자 화면
-     - 사용자모드와 분리
-     - 일반 사용자는 접근 불가
-     - 추후 관리자 로그인/권한 연동 자리
-========================================================== -->
-<section id="screen-admin" class="screen admin-only">
-  <h2 class="section-title">관리자 모드</h2>
-  <p class="section-sub">
-    사용자 화면과 분리된 관리자 전용 영역입니다.
-    실제 출시 시 관리자 로그인과 권한 체크를 별도 연결합니다.
-  </p>
-
-  <div class="mode-panel">
-    현재는 <strong>UI 분리용 관리자 모드</strong>입니다.<br />
-    추후 신고 처리, 사용자 관리, 매칭 상태 확인, 인증 상태 확인, 통계 확인 기능을 연결합니다.
-  </div>
-
-  <div class="card">
-    <strong>운영 현황</strong>
-    <div class="admin-stat-list">
-      <div class="admin-stat">
-        <span>전체 가입자</span>
-        <span id="admin-total-users">128</span>
-      </div>
-      <div class="admin-stat">
-        <span>성인 확인 완료</span>
-        <span id="admin-verified-users">104</span>
-      </div>
-      <div class="admin-stat">
-        <span>매칭 가능 사용자</span>
-        <span id="admin-matchable-users">76</span>
-      </div>
-      <div class="admin-stat">
-        <span>신고 대기 건수</span>
-        <span id="admin-report-count" class="danger-text">3</span>
-      </div>
+        <div class="score-bars">
+  <div class="bar-item">
+    <div class="bar-label">사주 궁합</div>
+    <div class="bar-bg">
+      <div id="barSaju" class="bar-fill"></div>
     </div>
+    <div id="detailSajuScore" class="bar-score"></div>
   </div>
 
-  <div class="card">
-    <strong>관리 기능 구분</strong>
-    <div class="admin-grid" style="margin-top:12px;">
-      <div class="admin-box">
-        <strong>사용자 관리</strong>
-        <p>
-          연령대, 성별, 지역, 궁합 점수대별로 사용자 목록을 조회하는 기능을 붙일 수 있습니다.
-        </p>
-      </div>
-      <div class="admin-box">
-        <strong>신고 / 차단 관리</strong>
-        <p>
-          신고 누적 계정, 반복 차단 계정, 위험 키워드 탐지 계정을 우선 확인하는 구조로 확장합니다.
-        </p>
-      </div>
-      <div class="admin-box">
-        <strong>본인인증 상태</strong>
-        <p>
-          PASS, 한국모바일인증, SNS 로그인 연동 이후 인증완료/대기/실패 상태를 확인하도록 구성합니다.
-        </p>
-      </div>
-      <div class="admin-box">
-        <strong>매칭 통계</strong>
-        <p>
-          별자리/MBTI/사주 점수 조합별로 어떤 매칭이 많이 성사되는지 통계형으로 볼 수 있게 확장합니다.
-        </p>
-      </div>
+  <div class="bar-item">
+    <div class="bar-label">MBTI 궁합</div>
+    <div class="bar-bg">
+      <div id="barMbti" class="bar-fill"></div>
     </div>
+    <div id="detailMbtiScore" class="bar-score"></div>
   </div>
 
-  <div class="card">
-    <strong>관리자 주의사항</strong>
-    <div class="mypage-list">
-      <div class="mypage-item">
-        <strong>사용자 화면과 분리 유지</strong>
-        <p>일반 사용자는 관리자 메뉴와 운영 정보가 보이지 않도록 유지합니다.</p>
-      </div>
-      <div class="mypage-item">
-        <strong>자동 운영 우선</strong>
-        <p>직접 차단/수동 대응보다 자동 감지와 정책 점수 누적 방식을 우선 고려합니다.</p>
-      </div>
-      <div class="mypage-item">
-        <strong>추후 연결 예정</strong>
-        <p>관리자 로그인, 신고 상세보기, 사용자 정지, 인증 상태 확인, 광고/수익 통계</p>
-      </div>
+  <div class="bar-item">
+    <div class="bar-label">별자리 궁합</div>
+    <div class="bar-bg">
+      <div id="barStar" class="bar-fill"></div>
     </div>
+    <div id="detailStarScore" class="bar-score"></div>
   </div>
-</section>
-  </main>
-
-  <!-- =========================================================
-       08. 하단 네비게이션
-       - 외부 링크 이동 금지
-       - 내부 showScreen 방식만 사용
-  ========================================================== -->
-  <nav class="bottom-nav">
-    <div class="bottom-nav-inner">
-  <button class="nav-btn active user-nav" data-nav="home" onclick="showScreen('home')">
-    <span>홈</span>
-  </button>
-  <button class="nav-btn user-nav" data-nav="profile" onclick="showScreen('profile')">
-    <span>가입</span>
-  </button>
-  <button class="nav-btn user-nav" data-nav="matching" onclick="showScreen('matching')">
-    <span>매칭</span>
-  </button>
-  <button class="nav-btn user-nav" data-nav="mypage" onclick="showScreen('mypage')">
-    <span>마이</span>
-  </button>
-  <button class="nav-btn admin-only" id="admin-nav-btn" data-nav="admin" onclick="showScreen('admin')">
-    <span>관리자</span>
-  </button>
-</div>
-  </nav>
-
-  <!-- =========================================================
-       09. 약관 / 개인정보 / 신고 / 문의 / 계정삭제 모달
-       - 별도 html 파일로 이동하지 않음
-       - 내부 팝업으로 구성해 경로 꼬임 방지
-  ========================================================== -->
-  <div class="modal-dim" id="common-modal">
-    <div class="modal">
-      <div class="modal-head">
-        <div class="modal-title" id="modal-title">안내</div>
-        <button class="modal-close" onclick="closeModal()">닫기</button>
-      </div>
-      <div class="modal-body" id="modal-body"></div>
-    </div>
-  </div>
-
-  <!-- =========================================================
-       10. 1차 공통 스크립트
-       - 화면 전환
-       - 선택형 칩 활성화
-       - 모달 열기/닫기
-       - 임시 저장/더미 출력
-       - 정교한 궁합 엔진은 다음 블록에서 연결
-  ========================================================== -->
-  <script>
-    const modalContents = {
-      terms: {
-        title: "이용약관",
-        body: `
-          본 서비스는 성인 이용자를 위한 궁합 기반 매칭 서비스입니다.<br /><br />
-          서비스 이용자는 타인 사칭, 허위 정보 등록, 불법 목적 접근, 타 사용자에 대한 금전 요구,
-          외부 메신저 유도형 사기 행위 등을 해서는 안 됩니다.<br /><br />
-          운영 정책 위반 시 노출 제한, 기능 제한, 계정 중단이 적용될 수 있습니다.
-        `
-      },
-      privacy: {
-        title: "개인정보처리방침",
-        body: `
-          프로필 입력 정보는 매칭 계산 및 서비스 제공 목적 범위 내에서 사용됩니다.<br /><br />
-          실제 출시 시 본인인증 연동, 서버 저장, 삭제 정책, 보관 기간, 제3자 제공 여부를 별도 고지합니다.<br /><br />
-          현재 통합본은 구조 정리 단계이며, 민감정보 처리 방식은 출시 전 별도 확정이 필요합니다.
-        `
-      },
-      report: {
-        title: "신고 / 차단 정책",
-        body: `
-          사용자는 부적절한 접근, 불쾌한 발언, 사기성 유도, 조건만남/불법 행위 의심 계정을 신고할 수 있습니다.<br /><br />
-          반복 신고 및 정책 위반 정황이 누적되는 경우 계정 제한이 적용될 수 있습니다.<br /><br />
-          <span class="warn-text">실서비스에서는 자동 탐지 + 관리자 검토 흐름을 함께 두는 것이 안전합니다.</span>
-        `
-      },
-      contact: {
-        title: "문의하기",
-        body: `
-          고객센터 메일: <strong>philosophia6@naver.com</strong><br /><br />
-          앱 사용 문의, 오류 제보, 계정 관련 요청, 신고 처리 문의 등에 사용할 수 있습니다.
-        `
-      },
-      delete: {
-        title: "계정 삭제 안내",
-        body: `
-          사용자는 앱 내 계정 삭제 메뉴를 통해 탈퇴를 요청할 수 있습니다.<br /><br />
-          실제 출시 시 보관 데이터, 즉시 삭제 항목, 법령상 보관 항목을 구분해 안내해야 합니다.<br /><br />
-          <span class="danger-text">테스트 단계에서는 삭제 기능 UI만 두고, 실제 데이터 삭제는 서버 연동 이후 연결합니다.</span>
-        `
-      }
-    };
-
-   function showScreen(name) {
-  if (name === "admin" && currentAppMode !== "admin") {
-    alert("관리자 모드에서만 접근할 수 있습니다.");
-    return;
-  }
-
-  const screens = document.querySelectorAll(".screen");
-  screens.forEach(screen => screen.classList.remove("active"));
-
-  const target = document.getElementById(`screen-${name}`);
-  if (target) target.classList.add("active");
-
-  const navs = document.querySelectorAll(".nav-btn");
-  navs.forEach(nav => nav.classList.remove("active"));
-
-  const navTarget = document.querySelector(`.nav-btn[data-nav="${name}"]`);
-  if (navTarget) navTarget.classList.add("active");
-
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-    function openModal(type) {
-      const data = modalContents[type];
-      if (!data) return;
-      document.getElementById("modal-title").innerHTML = data.title;
-      document.getElementById("modal-body").innerHTML = data.body;
-      document.getElementById("common-modal").classList.add("open");
-    }
-
-    function closeModal() {
-      document.getElementById("common-modal").classList.remove("open");
-    }
-
-    document.getElementById("common-modal").addEventListener("click", function(e) {
-      if (e.target.id === "common-modal") closeModal();
-    });
-
-    document.querySelectorAll(".chip").forEach(chip => {
-      chip.addEventListener("click", function() {
-        const group = this.dataset.group;
-        document.querySelectorAll(`.chip[data-group="${group}"]`).forEach(btn => {
-          btn.classList.remove("active");
-        });
-        this.classList.add("active");
-      });
-    });
-
-    function getActiveChipValue(group) {
-      const active = document.querySelector(`.chip[data-group="${group}"].active`);
-      return active ? active.dataset.value : "";
-    }
-
-    function saveProfileDraft() {
-      const profile = {
-        nickname: document.getElementById("nickname").value.trim(),
-        gender: getActiveChipValue("gender"),
-        mbti: document.getElementById("mbti").value,
-        birthYear: document.getElementById("birth-year").value.trim(),
-        birthMonth: document.getElementById("birth-month").value.trim(),
-        birthDay: document.getElementById("birth-day").value.trim(),
-        birthHour: document.getElementById("birth-hour").value.trim(),
-        region: document.getElementById("region").value,
-        job: document.getElementById("job").value.trim(),
-        intro: document.getElementById("intro").value.trim(),
-        adult: getActiveChipValue("adult")
-      };
-
-      localStorage.setItem("matchAppProfileDraft", JSON.stringify(profile));
-      updateMyPageSummary(profile);
-
-      alert("프로필이 임시 저장되었습니다.");
-    }
-
-    function loadProfileDraft() {
-      const raw = localStorage.getItem("matchAppProfileDraft");
-      if (!raw) return;
-
-      try {
-        const profile = JSON.parse(raw);
-
-        document.getElementById("nickname").value = profile.nickname || "";
-        document.getElementById("mbti").value = profile.mbti || "";
-        document.getElementById("birth-year").value = profile.birthYear || "";
-        document.getElementById("birth-month").value = profile.birthMonth || "";
-        document.getElementById("birth-day").value = profile.birthDay || "";
-        document.getElementById("birth-hour").value = profile.birthHour || "";
-        document.getElementById("region").value = profile.region || "";
-        document.getElementById("job").value = profile.job || "";
-        document.getElementById("intro").value = profile.intro || "";
-
-        if (profile.gender) {
-          document.querySelectorAll('.chip[data-group="gender"]').forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.value === profile.gender);
-          });
-        }
-
-        if (profile.adult) {
-          document.querySelectorAll('.chip[data-group="adult"]').forEach(btn => {
-            btn.classList.toggle("active", btn.dataset.value === profile.adult);
-          });
-        }
-
-        updateMyPageSummary(profile);
-      } catch (e) {
-        console.error("프로필 불러오기 오류:", e);
-      }
-    }
-
-    function updateMyPageSummary(profile) {
-      const summary = document.getElementById("mypage-profile-summary");
-      const nickname = profile.nickname || "미입력";
-      const gender = profile.gender === "male" ? "남성" : profile.gender === "female" ? "여성" : "미선택";
-      const mbti = profile.mbti || "미선택";
-      const birth = `${profile.birthYear || "?"}.${profile.birthMonth || "?"}.${profile.birthDay || "?"} ${profile.birthHour || "?"}시`;
-      const region = profile.region || "미선택";
-
-      summary.innerHTML = `
-        닉네임: ${nickname}<br />
-        성별: ${gender} / MBTI: ${mbti}<br />
-        출생정보: ${birth}<br />
-        지역: ${region}
-      `;
-    }
-
-  
-
-    function resetMatchingBox() {
-      document.getElementById("matching-summary").innerHTML = `
-        아직 궁합 계산 전입니다.<br />
-        다음 블록에서 MBTI, 별자리, 띠궁합, 사주 심화 엔진을 연결할 예정입니다.
-      `;
-
-      document.getElementById("match-list").innerHTML = `
-        <div class="empty-box">
-          아직 표시할 매칭 결과가 없습니다.<br />
-          프로필 저장 후 궁합 계산을 실행하면 여기에 결과가 표시됩니다.
-        </div>
-      `;
-    }
-
-/* =========================================================
-   10-A. 관리자모드 / 사용자모드 전환
-   - 일반 사용자는 관리자 화면 숨김
-   - 관리자일 때만 관리자 메뉴 표시
-========================================================== */
-
-let currentAppMode = localStorage.getItem("matchAppMode") || "user";
-
-function setAppMode(mode) {
-  currentAppMode = mode;
-  localStorage.setItem("matchAppMode", mode);
-  applyAppMode();
-
-  if (mode === "admin") {
-    showScreen("admin");
-  } else {
-    showScreen("home");
-  }
-}
-
-function applyAppMode() {
-  const badge = document.getElementById("mode-badge");
-  const adminNavBtn = document.getElementById("admin-nav-btn");
-  const adminScreen = document.getElementById("screen-admin");
-
-  if (currentAppMode === "admin") {
-    if (badge) badge.textContent = "관리자모드";
-    if (adminNavBtn) adminNavBtn.classList.remove("hidden");
-    if (adminScreen) adminScreen.classList.remove("admin-only");
-  } else {
-    if (badge) badge.textContent = "사용자모드";
-    if (adminNavBtn) adminNavBtn.classList.add("hidden");
-    if (adminScreen) adminScreen.classList.add("admin-only");
-
-    const activeAdminScreen = document.getElementById("screen-admin");
-    if (activeAdminScreen && activeAdminScreen.classList.contains("active")) {
-      showScreen("home");
-    }
-  }
-}
-
-/* =========================================================
-   11. 기본 궁합 엔진
-   - MBTI
-   - 별자리
-   - 띠궁합
-   - 나이차 / 지역
-   - 실제 계산형 매칭 결과 출력
-========================================================== */
-
-const zodiacAnimals = [
-  "원숭이", "닭", "개", "돼지", "쥐", "소",
-  "호랑이", "토끼", "용", "뱀", "말", "양"
-];
-
-const zodiacGoodPairs = {
-  "쥐": ["용", "원숭이", "소"],
-  "소": ["쥐", "뱀", "닭"],
-  "호랑이": ["말", "개", "돼지"],
-  "토끼": ["양", "돼지", "개"],
-  "용": ["쥐", "원숭이", "닭"],
-  "뱀": ["소", "닭", "원숭이"],
-  "말": ["호랑이", "개", "양"],
-  "양": ["토끼", "말", "돼지"],
-  "원숭이": ["쥐", "용", "뱀"],
-  "닭": ["소", "뱀", "용"],
-  "개": ["호랑이", "토끼", "말"],
-  "돼지": ["호랑이", "토끼", "양"]
-};
-
-const zodiacBadPairs = {
-  "쥐": ["말"],
-  "소": ["양"],
-  "호랑이": ["원숭이"],
-  "토끼": ["닭"],
-  "용": ["개"],
-  "뱀": ["돼지"],
-  "말": ["쥐"],
-  "양": ["소"],
-  "원숭이": ["호랑이"],
-  "닭": ["토끼"],
-  "개": ["용"],
-  "돼지": ["뱀"]
-};
-
-const mbtiGoodPairs = {
-  "INTJ": ["ENFP", "ENTP"],
-  "INTP": ["ENTJ", "ENFJ"],
-  "ENTJ": ["INTP", "INFP"],
-  "ENTP": ["INFJ", "INTJ"],
-  "INFJ": ["ENTP", "ENTP", "ENFP"],
-  "INFP": ["ENFJ", "ENTJ"],
-  "ENFJ": ["INFP", "ISFP"],
-  "ENFP": ["INTJ", "INFJ"],
-  "ISTJ": ["ESFP", "ESTP"],
-  "ISFJ": ["ESFP", "ESTP"],
-  "ESTJ": ["ISTP", "ISFP"],
-  "ESFJ": ["ISFP", "ISTP"],
-  "ISTP": ["ESTJ", "ESFJ"],
-  "ISFP": ["ESFJ", "ENFJ", "ESTJ"],
-  "ESTP": ["ISFJ", "ISTJ"],
-  "ESFP": ["ISTJ", "ISFJ"]
-};
-
-const starGoodPairs = {
-  "양자리": ["사자자리", "사수자리", "쌍둥이자리"],
-  "황소자리": ["처녀자리", "염소자리", "게자리"],
-  "쌍둥이자리": ["천칭자리", "물병자리", "양자리"],
-  "게자리": ["전갈자리", "물고기자리", "황소자리"],
-  "사자자리": ["양자리", "사수자리", "천칭자리"],
-  "처녀자리": ["황소자리", "염소자리", "게자리"],
-  "천칭자리": ["쌍둥이자리", "물병자리", "사자자리"],
-  "전갈자리": ["게자리", "물고기자리", "처녀자리"],
-  "사수자리": ["양자리", "사자자리", "물병자리"],
-  "염소자리": ["황소자리", "처녀자리", "전갈자리"],
-  "물병자리": ["쌍둥이자리", "천칭자리", "사수자리"],
-  "물고기자리": ["게자리", "전갈자리", "염소자리"]
-};
-
-const samplePartners = [
-  {
-    name: "서연",
-    gender: "female",
-    mbti: "ENFP",
-    birthYear: 1994,
-    birthMonth: 10,
-    birthDay: 11,
-    birthHour: 19,
-    region: "서울 송파",
-    intro: "대화가 부드럽고 진지한 관계를 선호해요."
-  },
-{
-  name: "유나",
-  gender: "female",
-  mbti: "ENFP", // INTJ면 궁합 최상급
-  birthYear: 1993,
-  birthMonth: 6,
-  birthDay: 10,
-  birthHour: 10,
-  region: "서울 강남",
-  intro: "밝고 대화 잘 통하는 스타일이에요."
-},
-{
-  name: "하린",
-  gender: "female",
-  mbti: "INFJ", // ENTP/INTJ랑 궁합 좋음
-  birthYear: 1994,
-  birthMonth: 3,
-  birthDay: 25,
-  birthHour: 14,
-  region: "서울 서초",
-  intro: "깊이 있는 관계를 선호해요."
-},
-{
-  name: "수아",
-  gender: "female",
-  mbti: "ISFP", // ESFJ/ENFJ 계열이면 좋음
-  birthYear: 1992,
-  birthMonth: 11,
-  birthDay: 2,
-  birthHour: 18,
-  region: "서울 송파",
-  intro: "편안하고 자연스러운 만남을 좋아해요."
-},
-  {
-    name: "지민",
-    gender: "female",
-    mbti: "ISFP",
-    birthYear: 1992,
-    birthMonth: 3,
-    birthDay: 8,
-    birthHour: 14,
-    region: "성남",
-    intro: "편안한 만남과 현실적인 성향의 대화를 좋아해요."
-  },
-  {
-    name: "민아",
-    gender: "female",
-    mbti: "INFJ",
-    birthYear: 1990,
-    birthMonth: 7,
-    birthDay: 22,
-    birthHour: 9,
-    region: "서울 강남",
-    intro: "깊이 있는 대화와 안정적인 관계를 중요하게 생각해요."
-  },
-  {
-    name: "현우",
-    gender: "male",
-    mbti: "ENTJ",
-    birthYear: 1991,
-    birthMonth: 12,
-    birthDay: 3,
-    birthHour: 21,
-    region: "서울 서초",
-    intro: "확실한 성향과 계획적인 관계를 선호합니다."
-  },
-  {
-    name: "도윤",
-    gender: "male",
-    mbti: "ISTP",
-    birthYear: 1995,
-    birthMonth: 5,
-    birthDay: 17,
-    birthHour: 11,
-    region: "수원",
-    intro: "과하지 않고 편한 연결을 원합니다."
-  },
-  {
-    name: "준호",
-    gender: "male",
-    mbti: "ENFJ",
-    birthYear: 1989,
-    birthMonth: 1,
-    birthDay: 29,
-    birthHour: 6,
-    region: "부산",
-    intro: "배려 있고 대화 잘 통하는 상대를 찾고 있어요."
-  }
-];
-
-function getZodiacAnimal(year) {
-  const idx = year % 12;
-  return zodiacAnimals[idx];
-}
-
-function getStarSign(month, day) {
-  const m = Number(month);
-  const d = Number(day);
-
-  if ((m === 3 && d >= 21) || (m === 4 && d <= 19)) return "양자리";
-  if ((m === 4 && d >= 20) || (m === 5 && d <= 20)) return "황소자리";
-  if ((m === 5 && d >= 21) || (m === 6 && d <= 21)) return "쌍둥이자리";
-  if ((m === 6 && d >= 22) || (m === 7 && d <= 22)) return "게자리";
-  if ((m === 7 && d >= 23) || (m === 8 && d <= 22)) return "사자자리";
-  if ((m === 8 && d >= 23) || (m === 9 && d <= 22)) return "처녀자리";
-  if ((m === 9 && d >= 23) || (m === 10 && d <= 22)) return "천칭자리";
-  if ((m === 10 && d >= 23) || (m === 11 && d <= 22)) return "전갈자리";
-  if ((m === 11 && d >= 23) || (m === 12 && d <= 24)) return "사수자리";
-  if ((m === 12 && d >= 25) || (m === 1 && d <= 19)) return "염소자리";
-  if ((m === 1 && d >= 20) || (m === 2 && d <= 18)) return "물병자리";
-  return "물고기자리";
-}
-
-function calcMbtiScore(myMbti, partnerMbti) {
-  if (!myMbti || !partnerMbti) return 8;
-  if (myMbti === partnerMbti) return 12;
-
-  const goodList = mbtiGoodPairs[myMbti] || [];
-  if (goodList.includes(partnerMbti)) return 24;
-
-  return 14;
-}
-
-function calcStarScore(myStar, partnerStar) {
-  if (!myStar || !partnerStar) return 8;
-  if (myStar === partnerStar) return 14;
-
-  const goodList = starGoodPairs[myStar] || [];
-  if (goodList.includes(partnerStar)) return 24;
-
-  return 12;
-}
-
-function calcZodiacScore(myAnimal, partnerAnimal) {
-  if (!myAnimal || !partnerAnimal) return 8;
-  if (myAnimal === partnerAnimal) return 16;
-
-  const goodList = zodiacGoodPairs[myAnimal] || [];
-  const badList = zodiacBadPairs[myAnimal] || [];
-
-  if (goodList.includes(partnerAnimal)) return 24;
-  if (badList.includes(partnerAnimal)) return 4;
-
-  return 12;
-}
-
-function calcAgeGapScore(myYear, partnerYear) {
-  const gap = Math.abs(Number(myYear) - Number(partnerYear));
-
-  if (gap <= 2) return 18;
-  if (gap <= 5) return 15;
-  if (gap <= 8) return 10;
-  if (gap <= 12) return 5;
-  return -8;
-}
-
-function calcRegionScore(myRegion, partnerRegion) {
-  if (!myRegion || !partnerRegion) return 4;
-  if (myRegion === partnerRegion) return 16;
-
-  const sameMetroPairs = [
-    ["서울 강남", "서울 서초"],
-    ["서울 강남", "서울 송파"],
-    ["서울 송파", "서울 강동"],
-    ["서울 서초", "성남"],
-    ["서울 송파", "성남"],
-    ["서울 강동", "성남"]
-  ];
-
-  const isNear = sameMetroPairs.some(([a, b]) =>
-    (a === myRegion && b === partnerRegion) || (a === partnerRegion && b === myRegion)
-  );
-
-  if (isNear) return 10;
-  return 3;
-}
-
-function getBaseProfileFromForm() {
-  return {
-    nickname: document.getElementById("nickname").value.trim(),
-    gender: getActiveChipValue("gender"),
-    mbti: document.getElementById("mbti").value,
-    birthYear: Number(document.getElementById("birth-year").value),
-    birthMonth: Number(document.getElementById("birth-month").value),
-    birthDay: Number(document.getElementById("birth-day").value),
-    birthHour: Number(document.getElementById("birth-hour").value),
-    region: document.getElementById("region").value,
-    job: document.getElementById("job").value.trim(),
-    intro: document.getElementById("intro").value.trim(),
-    adult: getActiveChipValue("adult")
-  };
-}
-
-function validateProfileForMatching(profile) {
-  if (!profile.nickname) return "닉네임을 입력해주세요.";
-  if (!profile.gender) return "성별을 선택해주세요.";
-  if (!profile.mbti) return "MBTI를 선택해주세요.";
-  if (!profile.birthYear || !profile.birthMonth || !profile.birthDay) return "생년월일을 입력해주세요.";
-  if (profile.birthHour === "" || Number.isNaN(profile.birthHour)) return "출생시간을 입력해주세요.";
-  if (!profile.region) return "지역을 선택해주세요.";
-  if (profile.adult !== "yes") return "성인 확인을 체크해주세요.";
-
-  const currentYear = new Date().getFullYear();
-  const age = currentYear - profile.birthYear;
-  if (age < 19) return "성인만 이용할 수 있습니다.";
-
-  return "";
-}
-
-function calculatePartnerScore(myProfile, partner) {
-  const myStar = getStarSign(myProfile.birthMonth, myProfile.birthDay);
-  const partnerStar = getStarSign(partner.birthMonth, partner.birthDay);
-
-  const myAnimal = getZodiacAnimal(myProfile.birthYear);
-  const partnerAnimal = getZodiacAnimal(partner.birthYear);
-
-  const mbtiScore = calcMbtiScore(myProfile.mbti, partner.mbti);
-  const starScore = calcStarScore(myStar, partnerStar);
-  const zodiacScore = calcZodiacScore(myAnimal, partnerAnimal);
-  const ageScore = calcAgeGapScore(myProfile.birthYear, partner.birthYear);
-  const regionScore = calcRegionScore(myProfile.region, partner.region);
-  const sajuBase = calcSajuBaseScore(myProfile, partner);
-
-  const total =
-    mbtiScore +
-    starScore +
-    zodiacScore +
-    ageScore +
-    regionScore +
-    sajuBase.total;
-
-  return {
-    total,
-    mbtiScore,
-    starScore,
-    zodiacScore,
-    ageScore,
-    regionScore,
-    sajuBaseScore: sajuBase.total,
-    sajuBase,
-    myStar,
-    partnerStar,
-    myAnimal,
-    partnerAnimal
-  };
-}
-
-function getScoreBadgeClass(score) {
-  if (score >= 80) return "score-high";
-  if (score >= 60) return "score-mid";
-  return "score-low";
-}
-
-function getScoreComment(score) {
-  if (score >= 80) return "기본 궁합 기준에서 좋은 흐름입니다.";
-  if (score >= 60) return "대화 가능권이지만 추가 궁합 판단이 필요합니다.";
-  return "기본 점수가 낮아 우선 추천 대상에서는 뒤로 밀립니다.";
-}
-
-function renderMatchingResults(myProfile, matches) {
-  const summary = document.getElementById("matching-summary");
-  const list = document.getElementById("match-list");
-
-  if (!matches.length) {
-    summary.innerHTML = `
-      현재 조건에 맞는 상대가 없습니다.
-    `;
-    list.innerHTML = `
-      <div class="empty-box">
-        추천 가능한 상대가 없습니다.
-      </div>
-    `;
-    return;
-  }
-
-  const top = matches[0];
-
-  summary.innerHTML = `
-    추천 결과가 계산되었습니다.<br />
-    최고 점수 상대는 <strong>${top.name}</strong>, 총점은 <strong>${top.score.total}</strong>점입니다.
-  `;
-
-  list.innerHTML = matches.map(item => {
-    const p = item.partner;
-    const s = item.score;
-    const badgeClass = getScoreBadgeClass(s.total);
-    const comment = getScoreComment(s.total);
-    const chatThreshold = 75;
-const chatLabel = s.total >= chatThreshold ? "채팅 가능" : "채팅 잠김";
-const isChatEnabled = s.total >= chatThreshold;
-
-   const relationTags = [
-  s.myStar,
-  s.partnerStar,
-  s.myAnimal,
-  s.partnerAnimal
-].filter(Boolean).slice(0, 4);
-
-    return `
-      <div class="match-card">
-        <div class="match-top">
-          <div class="match-name">${p.name}</div>
-          <div class="score-badge ${badgeClass}">총점 ${s.total}</div>
-        </div>
-
-        <div class="mini-info">
-          <span>${p.region}</span>
-          <span>MBTI ${p.mbti}</span>
-          <span>별자리 ${s.partnerStar}</span>
-          <span>띠 ${s.partnerAnimal}</span>
-        </div>
-
-        <div class="mini-info">
-          ${relationTags.map(tag => `<span>${tag}</span>`).join("")}
-        </div>
-<div class="match-desc">
-  ${comment}<br>
-  MBTI / 별자리 / 사주 궁합을 종합 분석한 결과입니다.
 </div>
 
-<div class="inline-actions">
-  <button 
-  class="btn btn-sm btn-secondary" 
-  type="button" 
-  ${isChatEnabled ? "" : "disabled"}
-  onclick="openChat('${p.name}')"
->
-  ${chatLabel}
-</button>
-  <button class="btn btn-sm btn-ghost" type="button">사주심화 반영</button>
-</div>
+        <div class="analysis-card">
+          <h3>사주 세부 흐름</h3>
+          <p id="detailSajuText">
+            년지, 월지, 일지, 시지 기준으로 인생 구간별 궁합 흐름을 보여줍니다.
+          </p>
+        </div>
+
+        <div class="analysis-card">
+          <h3>MBTI 궁합 설명</h3>
+          <p id="detailMbtiText">
+            성향 차이와 대화 방식, 감정 표현 방식의 조화를 기준으로 설명합니다.
+          </p>
+        </div>
+
+        <div class="analysis-card">
+          <h3>별자리 궁합 설명</h3>
+          <p id="detailStarText">
+            감정 흐름, 관계 속도, 끌림과 안정감을 기준으로 설명합니다.
+          </p>
+        </div>
+
+        <button class="primary-btn" id="detailChatBtn" onclick="openChatFromDetail()">
+          채팅 시작하기
+        </button>
+      </section>
+    </main>
+
+    <!-- 05. 채팅방 리스트 -->
+    <main class="screen" id="screen-chatList">
+      <div class="screen-title">
+        <h2>진행중인 채팅방</h2>
+        <p>채팅 내용은 일정 기간 후 자동 삭제됩니다.</p>
       </div>
-    `;
-  }).join("");
-}
-function runMatchingDemo() {
-  const myProfile = getBaseProfileFromForm();
-  const error = validateProfileForMatching(myProfile);
 
-  if (error) {
-    alert(error);
-    return;
-  }
+      <section id="chatRoomList" class="chat-room-list"></section>
+    </main>
+
+    <!-- 06. 채팅 화면 -->
+    <main class="screen" id="screen-chat">
+      <div class="chat-header">
+        <button class="back-btn" onclick="goScreen('chatList')">‹</button>
+        <div>
+          <h2 id="chatPartnerName">상대</h2>
+          <p>채팅 내용은 15일 후 자동 삭제될 수 있습니다.</p>
+        </div>
+      </div>
+
+      <section class="chat-warning">
+        외부 메신저 유도, 조건만남, 금전 요구, 연락처 교환 유도 문구는 차단될 수 있습니다.
+      </section>
+
+      <section id="chatMessages" class="chat-messages"></section>
+
+      <div class="chat-input-box">
+        <input id="chatInput" type="text" placeholder="메시지를 입력하세요" />
+        <button onclick="sendMessage()">전송</button>
+      </div>
+    </main>
+
+    <!-- 07. 프로필 -->
+    <main class="screen" id="screen-profile">
+      <div class="screen-title">
+        <h2>프로필 입력</h2>
+        <p>생년월일시는 외부에 공개되지 않고 궁합 계산에만 사용됩니다.</p>
+      </div>
+
+      <section class="form-card">
+        <label>프로필 이미지</label>
+        <input type="file" accept="image/*" id="profileImage" />
+
+        <label>닉네임</label>
+        <input id="nickname" type="text" placeholder="닉네임" />
+
+        <label>성별</label>
+        <select id="gender">
+          <option value="">선택</option>
+          <option value="male">남성</option>
+          <option value="female">여성</option>
+        </select>
+
+        <label>생년월일시</label>
+        <div class="grid-4">
+          <input id="birthYear" type="number" placeholder="연도" />
+          <input id="birthMonth" type="number" placeholder="월" />
+          <input id="birthDay" type="number" placeholder="일" />
+          <input id="birthHour" type="number" placeholder="시" />
+        </div>
+
+        <label>MBTI</label>
+        <select id="mbti">
+          <option value="">선택</option>
+          <option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option>
+          <option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option>
+          <option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option>
+          <option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option>
+        </select>
+
+        <label>지역</label>
+        <select id="region">
+          <option value="">선택</option>
+          <option>서울특별시</option>
+          <option>부산광역시</option>
+          <option>대구광역시</option>
+          <option>인천광역시</option>
+          <option>광주광역시</option>
+          <option>대전광역시</option>
+          <option>울산광역시</option>
+          <option>세종특별자치시</option>
+          <option>경기도</option>
+          <option>강원특별자치도</option>
+          <option>충청북도</option>
+          <option>충청남도</option>
+          <option>전라북도</option>
+          <option>전라남도</option>
+          <option>경상북도</option>
+          <option>경상남도</option>
+          <option>제주특별자치도</option>
+        </select>
+
+        <label>키 / 직업 / 학력 / 연봉</label>
+        <div class="grid-2">
+          <input id="height" type="text" placeholder="키" />
+          <input id="job" type="text" placeholder="직업" />
+          <input id="education" type="text" placeholder="학력" />
+          <input id="income" type="text" placeholder="연봉" />
+        </div>
+
+        <label>체형 / 스타일 / 주량 / 흡연</label>
+        <div class="grid-2">
+          <input id="bodyType" type="text" placeholder="체형" />
+          <input id="styleType" type="text" placeholder="스타일" />
+          <input id="drink" type="text" placeholder="주량" />
+          <input id="smoke" type="text" placeholder="흡연유무" />
+        </div>
+
+        <label>자기소개</label>
+        <textarea id="intro" placeholder="자신을 표현할 수 있는 소개글"></textarea>
+
+        <label>선호하는 체형/스타일</label>
+        <textarea id="preference" placeholder="선호하는 상대 스타일"></textarea>
+
+        <button class="primary-btn" onclick="saveProfile()">프로필 저장</button>
+      </section>
+    </main>
+
+    <!-- 08. 웹 연동 -->
+    <main class="screen" id="screen-webLink">
+      <div class="screen-title">
+        <h2>웹 궁합 서비스</h2>
+        <p>웹에서는 채팅 없이 재미용 궁합 확인만 제공합니다.</p>
+      </div>
+
+      <section class="notice-card">
+        <p>
+          웹페이지는 전 연령이 이용 가능한 재미용 궁합 서비스로 운영하고,
+          앱은 성인 인증 후 채팅 가능한 매칭 서비스로 분리합니다.
+        </p>
+
+        <button class="primary-btn" onclick="openWebService()">
+          웹 궁합 페이지 열기
+        </button>
+      </section>
+    </main>
+
+    <!-- 09. 설정 -->
+    <main class="screen" id="screen-settings">
+      <div class="screen-title">
+        <h2>설정</h2>
+        <p>알림, 약관, 신고, 계정 관리를 확인합니다.</p>
+      </div>
+
+      <section class="setting-list">
+        <button onclick="toggleAlarmSetting()">실시간 채팅 알림 설정</button>
+        <button onclick="openTextModal('terms')">이용약관</button>
+        <button onclick="openTextModal('privacy')">개인정보처리방침</button>
+        <button onclick="openTextModal('ugc')">UGC 이용약관</button>
+        <button onclick="openTextModal('report')">신고/차단 정책</button>
+        <button onclick="openTextModal('delete')">계정 삭제 안내</button>
+        <button onclick="openTextModal('contact')">문의하기</button>
+
+        <button class="hidden-admin-entry" onclick="openAdminGate()">
+          앱 정보
+        </button>
+      </section>
+    </main>
+
+    <!-- 10. 관리자 -->
+    <main class="screen" id="screen-admin">
+      <div class="screen-title">
+        <h2>관리자 통계</h2>
+        <p>일반 사용자에게는 숨겨진 관리자 화면입니다.</p>
+      </div>
+
+      <section class="admin-grid">
+        <div><span>오늘 가입자</span><strong>152명</strong></div>
+        <div><span>전체 가입자</span><strong>12,458명</strong></div>
+        <div><span>남성</span><strong>6,248명</strong></div>
+        <div><span>여성</span><strong>6,210명</strong></div>
+        <div><span>실시간 접속자</span><strong>1,024명</strong></div>
+        <div><span>오늘 채팅 수</span><strong>3,256건</strong></div>
+      </section>
+    </main>
+
+    <!-- 11. 하단 메뉴 -->
+<nav class="bottom-nav">
+  <button onclick="goScreen('home')">홈</button>
+  <button onclick="goScreen('matches')">궁합</button>
+  <button onclick="goScreen('profile')">프로필</button>
+  <button onclick="goScreen('settings')">설정</button>
+</nav>
+
+    <!-- 12. 공통 모달 -->
+    <div class="modal" id="textModal">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeTextModal()">닫기</button>
+        <h2 id="modalTitle"></h2>
+        <div id="modalBody"></div>
+      </div>
+    </div>
 
-  alert("현재 선택 성별: " + myProfile.gender);
-
-  const filteredPartners = samplePartners.filter(partner => partner.gender !== myProfile.gender);
-
-  const matches = filteredPartners.map(partner => {
-    return {
-      name: partner.name,
-      partner,
-      score: calculatePartnerScore(myProfile, partner)
-    };
-  }).sort((a, b) => b.score.total - a.score.total);
-
-  renderMatchingResults(myProfile, matches);
-}
-
-/* =========================================================
-   12. 사주 엔진 기본 블록
-   - 년/월/일/시 정리
-   - 연지(띠) 기반 사주 기초점수
-   - 시간 보정
-   - 기본 사주 점수 합산
-========================================================== */
-
-const earthlyBranches = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"];
-
-const branchAnimalMap = {
-  "자": "쥐",
-  "축": "소",
-  "인": "호랑이",
-  "묘": "토끼",
-  "진": "용",
-  "사": "뱀",
-  "오": "말",
-  "미": "양",
-  "신": "원숭이",
-  "유": "닭",
-  "술": "개",
-  "해": "돼지"
-};
-
-const sixHarmonyPairs = {
-  "자": "축",
-  "축": "자",
-  "인": "해",
-  "해": "인",
-  "묘": "술",
-  "술": "묘",
-  "진": "유",
-  "유": "진",
-  "사": "신",
-  "신": "사",
-  "오": "미",
-  "미": "오"
-};
-
-const clashPairs = {
-  "자": "오",
-  "오": "자",
-  "축": "미",
-  "미": "축",
-  "인": "신",
-  "신": "인",
-  "묘": "유",
-  "유": "묘",
-  "진": "술",
-  "술": "진",
-  "사": "해",
-  "해": "사"
-};
-
-const partialHarmonyGroups = [
-  ["신", "자", "진"],
-  ["해", "묘", "미"],
-  ["인", "오", "술"],
-  ["사", "유", "축"]
-];
-
-function getYearBranch(year) {
-  const idx = (Number(year) - 4) % 12;
-  return earthlyBranches[(idx + 12) % 12];
-}
-
-function getHourBranch(hour) {
-  const h = Number(hour);
-
-  if (h >= 23 || h < 1) return "자";
-  if (h >= 1 && h < 3) return "축";
-  if (h >= 3 && h < 5) return "인";
-  if (h >= 5 && h < 7) return "묘";
-  if (h >= 7 && h < 9) return "진";
-  if (h >= 9 && h < 11) return "사";
-  if (h >= 11 && h < 13) return "오";
-  if (h >= 13 && h < 15) return "미";
-  if (h >= 15 && h < 17) return "신";
-  if (h >= 17 && h < 19) return "유";
-  if (h >= 19 && h < 21) return "술";
-  return "해";
-}
-
-function getMonthBranch(month) {
-  const m = Number(month);
-  const map = {
-    1: "축",
-    2: "인",
-    3: "묘",
-    4: "진",
-    5: "사",
-    6: "오",
-    7: "미",
-    8: "신",
-    9: "유",
-    10: "술",
-    11: "해",
-    12: "자"
-  };
-  return map[m] || "자";
-}
-
-function getDayBranch(day) {
-  const d = Number(day);
-  return earthlyBranches[(d - 1) % 12];
-}
-
-function buildSajuBase(profile) {
-  return {
-    yearBranch: getYearBranch(profile.birthYear),
-    monthBranch: getMonthBranch(profile.birthMonth),
-    dayBranch: getDayBranch(profile.birthDay),
-    hourBranch: getHourBranch(profile.birthHour)
-  };
-}
-
-function calcBranchPairScore(branchA, branchB) {
-  if (!branchA || !branchB) return 0;
-
-  if (branchA === branchB) return 6;
-  if (sixHarmonyPairs[branchA] === branchB) return 12;
-  if (clashPairs[branchA] === branchB) return -10;
-
-  const inSameGroup = partialHarmonyGroups.some(group =>
-    group.includes(branchA) && group.includes(branchB)
-  );
-  if (inSameGroup) return 8;
-
-  return 2;
-}
-
-function calcHourMatchScore(hourA, hourB) {
-  const diff = Math.abs(Number(hourA) - Number(hourB));
-  if (diff <= 1) return 6;
-  if (diff <= 3) return 4;
-  if (diff <= 6) return 2;
-  return 0;
-}
-
-function calcSajuBaseScore(myProfile, partner) {
-  const mySaju = buildSajuBase(myProfile);
-  const partnerSaju = buildSajuBase(partner);
-
-  const yearScore = calcBranchPairScore(mySaju.yearBranch, partnerSaju.yearBranch);
-  const monthScore = calcBranchPairScore(mySaju.monthBranch, partnerSaju.monthBranch);
-  const dayScore = calcBranchPairScore(mySaju.dayBranch, partnerSaju.dayBranch);
-  const hourBranchScore = calcBranchPairScore(mySaju.hourBranch, partnerSaju.hourBranch);
-  const hourMatchScore = calcHourMatchScore(myProfile.birthHour, partner.birthHour);
-
-  const total = yearScore + monthScore + dayScore + hourBranchScore + hourMatchScore;
-
-  return {
-    total,
-    yearScore,
-    monthScore,
-    dayScore,
-    hourBranchScore,
-    hourMatchScore,
-    mySaju,
-    partnerSaju
-  };
-}
-
-/* =========================================================
-   13. 형충회합 강화 블록
-   14. 12운성 간이 계산
-   15. 신살 간이 계산
-   16. 십성 + 20년 구간 점수
-========================================================== */
-
-const heavenlyStems = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"];
-
-const stemMeta = {
-  "갑": { element: "목", yinYang: "양" },
-  "을": { element: "목", yinYang: "음" },
-  "병": { element: "화", yinYang: "양" },
-  "정": { element: "화", yinYang: "음" },
-  "무": { element: "토", yinYang: "양" },
-  "기": { element: "토", yinYang: "음" },
-  "경": { element: "금", yinYang: "양" },
-  "신": { element: "금", yinYang: "음" },
-  "임": { element: "수", yinYang: "양" },
-  "계": { element: "수", yinYang: "음" }
-};
-
-const generationMap = {
-  "목": "화",
-  "화": "토",
-  "토": "금",
-  "금": "수",
-  "수": "목"
-};
-
-const controlMap = {
-  "목": "토",
-  "토": "수",
-  "수": "화",
-  "화": "금",
-  "금": "목"
-};
-
-const branchPunishPairs = {
-  "자": "묘",
-  "묘": "자",
-  "축": "술",
-  "술": "축",
-  "인": "사",
-  "사": "신",
-  "신": "인",
-  "유": "유",
-  "오": "오",
-  "진": "진",
-  "해": "해",
-  "미": "미"
-};
-
-const branchHarmPairs = {
-  "자": "미",
-  "미": "자",
-  "축": "오",
-  "오": "축",
-  "인": "사",
-  "사": "인",
-  "묘": "진",
-  "진": "묘",
-  "신": "해",
-  "해": "신",
-  "유": "술",
-  "술": "유"
-};
-
-const twelveStageNames = [
-  "장생", "목욕", "관대", "건록", "제왕", "쇠",
-  "병", "사", "묘", "절", "태", "양"
-];
-
-const favorableTwelveStages = ["장생", "관대", "건록", "제왕"];
-const weakTwelveStages = ["병", "사", "묘", "절"];
-
-const peachBlossomMap = {
-  "신": "유", "자": "유", "진": "유",
-  "인": "묘", "오": "묘", "술": "묘",
-  "해": "자", "묘": "자", "미": "자",
-  "사": "오", "유": "오", "축": "오"
-};
-
-const yeokmaMap = {
-  "신": "인", "자": "인", "진": "인",
-  "인": "신", "오": "신", "술": "신",
-  "해": "사", "묘": "사", "미": "사",
-  "사": "해", "유": "해", "축": "해"
-};
-
-function getYearStem(year) {
-  const idx = (Number(year) - 4) % 10;
-  return heavenlyStems[(idx + 10) % 10];
-}
-
-function getMonthStem(yearStem, month) {
-  const yearStemIdx = heavenlyStems.indexOf(yearStem);
-  const idx = (yearStemIdx * 2 + Number(month)) % 10;
-  return heavenlyStems[idx];
-}
-
-function getDayStem(year, month, day) {
-  const serial = Number(year) * 10000 + Number(month) * 100 + Number(day);
-  return heavenlyStems[serial % 10];
-}
-
-function getHourStem(dayStem, hourBranch) {
-  const dayStemIdx = heavenlyStems.indexOf(dayStem);
-  const hourBranchIdx = earthlyBranches.indexOf(hourBranch);
-  return heavenlyStems[(dayStemIdx * 2 + hourBranchIdx) % 10];
-}
-
-function buildSajuFull(profile) {
-  const yearStem = getYearStem(profile.birthYear);
-  const yearBranch = getYearBranch(profile.birthYear);
-  const monthStem = getMonthStem(yearStem, profile.birthMonth);
-  const monthBranch = getMonthBranch(profile.birthMonth);
-  const dayStem = getDayStem(profile.birthYear, profile.birthMonth, profile.birthDay);
-  const dayBranch = getDayBranch(profile.birthDay);
-  const hourBranch = getHourBranch(profile.birthHour);
-  const hourStem = getHourStem(dayStem, hourBranch);
-
-  return {
-    yearStem, yearBranch,
-    monthStem, monthBranch,
-    dayStem, dayBranch,
-    hourStem, hourBranch
-  };
-}
-
-function analyzeBranchRelation(branchA, branchB) {
-  if (branchA === branchB) return { type: "동지", score: 6 };
-  if (sixHarmonyPairs[branchA] === branchB) return { type: "육합", score: 12 };
-  if (clashPairs[branchA] === branchB) return { type: "충", score: -10 };
-  if (branchPunishPairs[branchA] === branchB) return { type: "형", score: -6 };
-  if (branchHarmPairs[branchA] === branchB) return { type: "해", score: -4 };
-
-  const sameHarmonyGroup = partialHarmonyGroups.some(group =>
-    group.includes(branchA) && group.includes(branchB)
-  );
-
-  if (sameHarmonyGroup) return { type: "삼합계열", score: 8 };
-  return { type: "중립", score: 2 };
-}
-
-function calcBranchComboScore(mySaju, partnerSaju) {
-  const yy = analyzeBranchRelation(mySaju.yearBranch, partnerSaju.yearBranch);
-  const mm = analyzeBranchRelation(mySaju.monthBranch, partnerSaju.monthBranch);
-  const dd = analyzeBranchRelation(mySaju.dayBranch, partnerSaju.dayBranch);
-  const hh = analyzeBranchRelation(mySaju.hourBranch, partnerSaju.hourBranch);
-  const yd = analyzeBranchRelation(mySaju.yearBranch, partnerSaju.dayBranch);
-  const dy = analyzeBranchRelation(mySaju.dayBranch, partnerSaju.yearBranch);
-
-  const total = yy.score + mm.score + dd.score + hh.score + yd.score + dy.score;
-
-  return {
-    total,
-    yearPair: yy,
-    monthPair: mm,
-    dayPair: dd,
-    hourPair: hh,
-    crossYearDay: yd,
-    crossDayYear: dy
-  };
-}
-
-function getTwelveStageByBranches(myDayBranch, partnerBranch) {
-  const myIdx = earthlyBranches.indexOf(myDayBranch);
-  const partnerIdx = earthlyBranches.indexOf(partnerBranch);
-  const offset = (partnerIdx - myIdx + 12) % 12;
-  return twelveStageNames[offset];
-}
-
-function scoreTwelveStage(stage) {
-  if (favorableTwelveStages.includes(stage)) return 8;
-  if (weakTwelveStages.includes(stage)) return -4;
-  return 2;
-}
-
-function calcTwelveStarScore(mySaju, partnerSaju) {
-  const yearStage = getTwelveStageByBranches(mySaju.dayBranch, partnerSaju.yearBranch);
-  const monthStage = getTwelveStageByBranches(mySaju.dayBranch, partnerSaju.monthBranch);
-  const dayStage = getTwelveStageByBranches(mySaju.dayBranch, partnerSaju.dayBranch);
-  const hourStage = getTwelveStageByBranches(mySaju.dayBranch, partnerSaju.hourBranch);
-
-  const total =
-    scoreTwelveStage(yearStage) +
-    scoreTwelveStage(monthStage) +
-    scoreTwelveStage(dayStage) +
-    scoreTwelveStage(hourStage);
-
-  return {
-    total,
-    yearStage,
-    monthStage,
-    dayStage,
-    hourStage
-  };
-}
-
-function detectPeachBlossom(saju) {
-  return peachBlossomMap[saju.yearBranch] === saju.dayBranch ||
-         peachBlossomMap[saju.yearBranch] === saju.hourBranch;
-}
-
-function detectYeokma(saju) {
-  return yeokmaMap[saju.yearBranch] === saju.dayBranch ||
-         yeokmaMap[saju.yearBranch] === saju.hourBranch;
-}
-
-function calcShinsalScore(mySaju, partnerSaju) {
-  const myPeach = detectPeachBlossom(mySaju);
-  const partnerPeach = detectPeachBlossom(partnerSaju);
-  const myMove = detectYeokma(mySaju);
-  const partnerMove = detectYeokma(partnerSaju);
-
-  let total = 0;
-  let tags = [];
-
-  if (myPeach && partnerPeach) {
-    total += 6;
-    tags.push("도화");
-  }
-
-  if (myMove && partnerMove) {
-    total += 4;
-    tags.push("역마");
-  }
-
-  if (myPeach && partnerMove) {
-    total += 2;
-    tags.push("도화-역마");
-  }
-
-  if (myMove && partnerPeach) {
-    total += 2;
-    tags.push("역마-도화");
-  }
-
-  return {
-    total,
-    tags
-  };
-}
-
-function getTenGodType(myDayStem, partnerDayStem) {
-  const myMeta = stemMeta[myDayStem];
-  const partnerMeta = stemMeta[partnerDayStem];
-
-  if (!myMeta || !partnerMeta) return "중립";
-
-  if (myMeta.element === partnerMeta.element) {
-    return myMeta.yinYang === partnerMeta.yinYang ? "비견" : "겁재";
-  }
-
-  if (generationMap[myMeta.element] === partnerMeta.element) {
-    return myMeta.yinYang === partnerMeta.yinYang ? "식신" : "상관";
-  }
-
-  if (controlMap[myMeta.element] === partnerMeta.element) {
-    return myMeta.yinYang === partnerMeta.yinYang ? "편재" : "정재";
-  }
-
-  if (controlMap[partnerMeta.element] === myMeta.element) {
-    return myMeta.yinYang === partnerMeta.yinYang ? "편관" : "정관";
-  }
-
-  if (generationMap[partnerMeta.element] === myMeta.element) {
-    return myMeta.yinYang === partnerMeta.yinYang ? "편인" : "정인";
-  }
-
-  return "중립";
-}
-
-function scoreTenGod(type) {
-  const table = {
-    "비견": 4,
-    "겁재": 2,
-    "식신": 8,
-    "상관": 5,
-    "편재": 6,
-    "정재": 8,
-    "편관": 4,
-    "정관": 8,
-    "편인": 3,
-    "정인": 7,
-    "중립": 2
-  };
-  return table[type] || 2;
-}
-
-function calcTenGodScore(mySaju, partnerSaju) {
-  const dayType = getTenGodType(mySaju.dayStem, partnerSaju.dayStem);
-  const yearType = getTenGodType(mySaju.yearStem, partnerSaju.yearStem);
-  const monthType = getTenGodType(mySaju.monthStem, partnerSaju.monthStem);
-  const hourType = getTenGodType(mySaju.hourStem, partnerSaju.hourStem);
-
-  const total =
-    scoreTenGod(dayType) +
-    scoreTenGod(yearType) +
-    scoreTenGod(monthType) +
-    scoreTenGod(hourType);
-
-  return {
-    total,
-    dayType,
-    yearType,
-    monthType,
-    hourType
-  };
-}
-
-function calcTwentyYearSegmentScore(mySaju, partnerSaju) {
-  const yearPart = analyzeBranchRelation(mySaju.yearBranch, partnerSaju.yearBranch).score + scoreTenGod(getTenGodType(mySaju.yearStem, partnerSaju.yearStem));
-  const monthPart = analyzeBranchRelation(mySaju.monthBranch, partnerSaju.monthBranch).score + scoreTenGod(getTenGodType(mySaju.monthStem, partnerSaju.monthStem));
-  const dayPart = analyzeBranchRelation(mySaju.dayBranch, partnerSaju.dayBranch).score + scoreTenGod(getTenGodType(mySaju.dayStem, partnerSaju.dayStem));
-  const hourPart = analyzeBranchRelation(mySaju.hourBranch, partnerSaju.hourBranch).score + scoreTenGod(getTenGodType(mySaju.hourStem, partnerSaju.hourStem));
-
-  const total = Math.round(yearPart * 0.9 + monthPart * 1.0 + dayPart * 1.2 + hourPart * 0.9);
-
-  return {
-    total,
-    yearPart,
-    monthPart,
-    dayPart,
-    hourPart
-  };
-}
-function calculatePartnerScore(myProfile, partner) {
-  const myStar = getStarSign(myProfile.birthMonth, myProfile.birthDay);
-  const partnerStar = getStarSign(partner.birthMonth, partner.birthDay);
-
-  const myAnimal = getZodiacAnimal(myProfile.birthYear);
-  const partnerAnimal = getZodiacAnimal(partner.birthYear);
-
-  const mbtiScore = calcMbtiScore(myProfile.mbti, partner.mbti);
-  const starScore = calcStarScore(myStar, partnerStar);
-  const zodiacScore = calcZodiacScore(myAnimal, partnerAnimal);
-  const ageScore = calcAgeGapScore(myProfile.birthYear, partner.birthYear);
-  const regionScore = calcRegionScore(myProfile.region, partner.region);
-  const sajuBase = calcSajuBaseScore(myProfile, partner);
-
-  const total = mbtiScore + starScore + zodiacScore + ageScore + regionScore + sajuBase.total;
-
-  return {
-    total,
-    mbtiScore,
-    starScore,
-    zodiacScore,
-    ageScore,
-    regionScore,
-    sajuBaseScore: sajuBase.total,
-    sajuBase,
-    myStar,
-    partnerStar,
-    myAnimal,
-    partnerAnimal
-  };
-}
-    loadProfileDraft();
-applyAppMode();
-
-function openChat(name) {
-  const panel = document.getElementById("chat-panel");
-  const title = document.getElementById("chat-title");
-  const messages = document.getElementById("chat-messages");
-  const input = document.getElementById("chat-input");
-
-  panel.style.display = "block";
-  title.textContent = name + "님과의 채팅";
-  messages.innerHTML = `
-    <div class="empty-box">${name}님과 대화를 시작해보세요.</div>
-  `;
-  input.value = "";
-  input.focus();
-}
-
-function closeChat() {
-  document.getElementById("chat-panel").style.display = "none";
-}
-
-function getTime() {
-  const now = new Date();
-  const h = now.getHours().toString().padStart(2, "0");
-  const m = now.getMinutes().toString().padStart(2, "0");
-  return `${h}:${m}`;
-}
-
-function sendChatMessage() {
-  const input = document.getElementById("chat-input");
-  const messages = document.getElementById("chat-messages");
-  const text = input.value.trim();
-
-  if (!text) return;
-
-  messages.innerHTML += `
-  <div class="chat-row me">
-    <div class="chat-bubble me">${text}</div>
-    <div class="chat-time">${getTime()}</div>
   </div>
-`;
-  input.value = "";
 
-  messages.scrollTop = messages.scrollHeight;
-
-  // 🔥 자동 답장
-  setTimeout(() => {
-    messages.innerHTML += `
-      <div class="chat-bubble other">응 좋아 👍</div>
-    `;
-    messages.scrollTop = messages.scrollHeight;
-  }, 1000);
-}
-  </script>
+  <script src="./script-1.js"></script>
+  <script src="./script-2.js"></script>
+  <script src="./script-3.js"></script>
 </body>
 </html>
