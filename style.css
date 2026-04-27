@@ -370,3 +370,36 @@ h1,h2,h3,p{margin:0}
   background:linear-gradient(180deg,rgba(72,35,151,.95),rgba(22,12,55,.96));
   border:1px solid rgba(173,113,255,.38);
 }
+
+.admin-chat-stats{
+  margin-top:14px;
+  padding:16px;
+  border-radius:22px;
+  background:#fff;
+  color:#111;
+}
+.admin-chat-stats h3{
+  margin:0 0 12px;
+  font-size:15px;
+}
+.hour-row{
+  display:grid;
+  grid-template-columns:40px 1fr 42px;
+  align-items:center;
+  gap:8px;
+  margin:8px 0;
+  font-size:12px;
+}
+.hour-bar-bg{
+  height:9px;
+  background:#eee;
+  border-radius:999px;
+  overflow:hidden;
+}
+.hour-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,#ff4fab,#7d39ff);
+}
+.hour-row strong{
+  text-align:right;
+}
