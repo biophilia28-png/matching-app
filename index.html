@@ -777,6 +777,680 @@ textarea {
   }
 })();
 </script>
+  <!-- =========================================================
+2차~끝 통합 패치
+- 채팅 3~5회 무료 후 유료 안내
+- 신고/차단/공지 시스템
+- 신뢰점수
+- 궁합 300점 구조
+- 거리표시 설정
+- 고득점 상대 알림 설정
+- 추천인 혜택
+- 탈퇴/재가입 제한 안내
+- 사진도용/캡쳐방지 안내
+========================================================= -->
+
+<style>
+.notice-panel,
+.safety-panel,
+.pay-panel,
+.trust-panel,
+.match-score-panel {
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  padding:14px;
+  margin:12px 0;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.notice-panel h3,
+.safety-panel h3,
+.pay-panel h3,
+.trust-panel h3,
+.match-score-panel h3 {
+  margin:0 0 8px;
+  font-size:15px;
+}
+
+.notice-list {
+  font-size:13px;
+  color:#374151;
+  line-height:1.55;
+  padding-left:18px;
+}
+
+.badge-soft {
+  display:inline-block;
+  padding:4px 8px;
+  border-radius:999px;
+  font-size:12px;
+  background:#f3f4f6;
+  color:#111827;
+  margin:2px;
+}
+
+.danger-text { color:#dc2626; font-weight:700; }
+.safe-text { color:#059669; font-weight:700; }
+
+.patch-btn {
+  width:100%;
+  padding:11px;
+  border:0;
+  border-radius:12px;
+  background:#111827;
+  color:#fff;
+  font-weight:700;
+  margin-top:8px;
+}
+
+.patch-btn-light {
+  width:100%;
+  padding:10px;
+  border:1px solid #d1d5db;
+  border-radius:12px;
+  background:#fff;
+  color:#111827;
+  font-weight:700;
+  margin-top:8px;
+}
+
+.report-select,
+.patch-input,
+.patch-select {
+  width:100%;
+  padding:10px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  margin:6px 0;
+}
+
+.match-filter-row {
+  display:flex;
+  gap:8px;
+  margin:10px 0;
+}
+
+.match-filter-row button {
+  flex:1;
+  padding:9px;
+  border-radius:999px;
+  border:1px solid #ddd;
+  background:#f9fafb;
+}
+
+.match-filter-row button.active {
+  background:#111827;
+  color:#fff;
+}
+
+.score-mini {
+  font-size:12px;
+  color:#6b7280;
+  margin-top:4px;
+}
+</style>
+
+<script>
+(function(){
+  const KEYS = {
+    chat: "chatCredit_v2",
+    reports: "reports_v2",
+    notices: "notices_v2",
+    settings: "settings_v2",
+    trust: "trustScore_v2",
+    referral: "referral_v2"
+  };
+
+  function $(id){ return document.getElementById(id); }
+
+  function load(key, fallback){
+    try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+    catch { return fallback; }
+  }
+
+  function save(key, value){
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function getSettings(){
+    return load(KEYS.settings, {
+      highScoreAlert:true,
+      showDistance:true,
+      captureNotice:true,
+      autoDeleteChat:true
+    });
+  }
+
+  function initChatCredit(){
+    const current = load(KEYS.chat, null);
+    if(!current){
+      save(KEYS.chat, {
+        freeUsed:0,
+        freeLimit:5,
+        paidUsed:0,
+        lastPrice:0
+      });
+    }
+  }
+
+  function getChatPrice(){
+    const data = load(KEYS.chat, {freeUsed:0, freeLimit:5, paidUsed:0});
+    if(data.freeUsed < data.freeLimit) return 0;
+
+    const paidCount = data.paidUsed || 0;
+
+    if(paidCount < 3) return 1000;
+    if(paidCount < 7) return 1500;
+    if(paidCount < 15) return 2000;
+    return 3000;
+  }
+
+  window.requestChatWithMatch = function(matchName){
+    initChatCredit();
+
+    const data = load(KEYS.chat, {freeUsed:0, freeLimit:5, paidUsed:0});
+    const price = getChatPrice();
+
+    if(price === 0){
+      data.freeUsed += 1;
+      save(KEYS.chat, data);
+      alert(`${matchName || "상대"}님에게 무료 채팅신청을 보냈습니다. 남은 무료횟수: ${Math.max(0, data.freeLimit - data.freeUsed)}회`);
+      renderPayPanel();
+      return true;
+    }
+
+    const ok = confirm(
+      `무료 채팅신청 ${data.freeLimit}회를 모두 사용했습니다.\n\n이번 채팅신청 예상 비용: ${price.toLocaleString()}원\n\n실제 결제 연동 전에는 테스트 처리됩니다.`
+    );
+
+    if(ok){
+      data.paidUsed += 1;
+      data.lastPrice = price;
+      save(KEYS.chat, data);
+      alert("테스트 결제 처리 후 채팅신청이 완료되었습니다.");
+      renderPayPanel();
+      return true;
+    }
+
+    return false;
+  };
+
+  function renderPayPanel(){
+    const home = $("screen-home") || $("home") || document.body;
+    let panel = $("paySystemPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "paySystemPanel";
+      panel.className = "pay-panel";
+      home.appendChild(panel);
+    }
+
+    const data = load(KEYS.chat, {freeUsed:0, freeLimit:5, paidUsed:0});
+    const price = getChatPrice();
+    const left = Math.max(0, data.freeLimit - data.freeUsed);
+
+    panel.innerHTML = `
+      <h3>채팅신청 이용권</h3>
+      <div class="badge-soft">무료 ${left}회 남음</div>
+      <div class="badge-soft">사용 ${data.freeUsed}/${data.freeLimit}</div>
+      <div class="badge-soft">다음 예상비용 ${price === 0 ? "무료" : price.toLocaleString()+"원"}</div>
+      <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+        무분별한 채팅과 불법 유도 방지를 위해 무료횟수 이후에는 채팅신청 횟수에 따라 비용이 증가하는 구조입니다.
+      </p>
+    `;
+  }
+
+  function initNotices(){
+    const current = load(KEYS.notices, null);
+    if(!current){
+      save(KEYS.notices, [
+        "라인·텔레그램·중국 메신저 등 외부앱 유도는 계정 제한 사유입니다.",
+        "조건만남, 금전 요구, 사기 의심 행위는 1회 신고만으로도 즉시 제한될 수 있습니다.",
+        "프로필 사진 도용, 타인 이미지 무단 사용은 신고 및 추방 사유입니다.",
+        "신고 또는 경고가 누적되면 채팅 제한, 계정 정지, 재가입 제한이 적용될 수 있습니다.",
+        "채팅 대화는 안전을 위해 일정 기간 후 자동 삭제될 수 있습니다.",
+        "궁합점수는 참고자료이며 실제 인연은 대화, 매너, 환경, 가치관에 따라 달라질 수 있습니다."
+      ]);
+    }
+  }
+
+  function renderNoticePanel(){
+    initNotices();
+
+    const home = $("screen-home") || $("home") || document.body;
+    let panel = $("noticePanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "noticePanel";
+      panel.className = "notice-panel";
+      home.prepend(panel);
+    }
+
+    const notices = load(KEYS.notices, []);
+
+    panel.innerHTML = `
+      <h3>공지사항 / 안전 안내</h3>
+      <ul class="notice-list">
+        ${notices.map(n => `<li>${n}</li>`).join("")}
+      </ul>
+    `;
+  }
+
+  function renderReportPanel(){
+    const profile = $("screen-profile") || $("profileForm") || document.body;
+    let panel = $("reportManualPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "reportManualPanel";
+      panel.className = "safety-panel";
+      profile.appendChild(panel);
+    }
+
+    panel.innerHTML = `
+      <h3>신고 메뉴얼</h3>
+      <p style="font-size:13px;color:#374151;">
+        아래 사유는 신고 누적 또는 심각도에 따라 경고, 채팅제한, 계정정지, 영구추방, 재가입 제한이 적용될 수 있습니다.
+      </p>
+
+      <select id="reportReason" class="report-select">
+        <option value="">신고 사유 선택</option>
+        <option>라인/텔레그램/중국 메신저 유도</option>
+        <option>조건만남 또는 금전 요구</option>
+        <option>프로필 이미지 도용</option>
+        <option>욕설/협박/성희롱</option>
+        <option>사기 의심</option>
+        <option>불쾌한 대화</option>
+        <option>기타 운영정책 위반</option>
+      </select>
+
+      <input id="reportTarget" class="patch-input" placeholder="신고 대상 닉네임">
+      <button class="patch-btn" onclick="submitReport()">신고 접수 테스트</button>
+
+      <p style="font-size:12px;color:#6b7280;">
+        일반 신고는 3~5회 누적 시 제한, 조건만남·사기·도용 등 중대 사유는 1회 신고도 즉시 제한될 수 있습니다.
+      </p>
+    `;
+  }
+
+  window.submitReport = function(){
+    const reason = $("reportReason")?.value || "";
+    const target = $("reportTarget")?.value || "";
+
+    if(!reason || !target){
+      alert("신고 대상과 사유를 입력해주세요.");
+      return;
+    }
+
+    const reports = load(KEYS.reports, []);
+    reports.push({
+      target,
+      reason,
+      date:new Date().toLocaleString(),
+      severe: /조건|사기|도용|텔레그램|라인|중국/.test(reason)
+    });
+
+    save(KEYS.reports, reports);
+
+    if(/조건|사기|도용|텔레그램|라인|중국/.test(reason)){
+      alert("중대 신고로 접수되었습니다. 운영자 검토 후 즉시 제한될 수 있습니다.");
+    } else {
+      alert("신고가 접수되었습니다. 누적 신고 3~5회 이상 시 제한될 수 있습니다.");
+    }
+
+    renderTrustPanel();
+  };
+
+  function calculateTrustScore(){
+    const reports = load(KEYS.reports, []);
+    let score = 100;
+
+    reports.forEach(r => {
+      score -= r.severe ? 20 : 8;
+    });
+
+    score = Math.max(0, Math.min(100, score));
+
+    save(KEYS.trust, {score, updated:new Date().toLocaleString()});
+    return score;
+  }
+
+  function renderTrustPanel(){
+    const home = $("screen-home") || $("home") || document.body;
+    let panel = $("trustPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "trustPanel";
+      panel.className = "trust-panel";
+      home.appendChild(panel);
+    }
+
+    const score = calculateTrustScore();
+
+    panel.innerHTML = `
+      <h3>신뢰점수</h3>
+      <div class="badge-soft">현재 ${score}점</div>
+      <p style="font-size:12px;color:#6b7280;margin-top:8px;">
+        신고 이력, 매너 평가, 대화 지속률, 실제 만남 후 평가, 본인 얼굴 등록 여부 등을 종합해 신뢰점수로 반영할 예정입니다.
+      </p>
+    `;
+  }
+
+  function renderSettingsPatch(){
+    const settings = $("screen-settings") || $("settings") || document.body;
+    let panel = $("settingsPatchPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "settingsPatchPanel";
+      panel.className = "notice-panel";
+      settings.appendChild(panel);
+    }
+
+    const s = getSettings();
+
+    panel.innerHTML = `
+      <h3>알림 / 거리 / 안전 설정</h3>
+
+      <label>
+        <input type="checkbox" id="setHighScoreAlert" ${s.highScoreAlert ? "checked" : ""}>
+        높은 궁합 상대 가입 시 알림받기
+      </label><br>
+
+      <label>
+        <input type="checkbox" id="setShowDistance" ${s.showDistance ? "checked" : ""}>
+        상대방에게 내 거리 표시 허용
+      </label><br>
+
+      <label>
+        <input type="checkbox" id="setCaptureNotice" ${s.captureNotice ? "checked" : ""}>
+        캡쳐방지 및 초상권 보호 안내 표시
+      </label><br>
+
+      <label>
+        <input type="checkbox" id="setAutoDeleteChat" ${s.autoDeleteChat ? "checked" : ""}>
+        일정 기간 후 채팅 자동삭제 안내
+      </label>
+
+      <button class="patch-btn" onclick="saveSafetySettings()">설정 저장</button>
+    `;
+  }
+
+  window.saveSafetySettings = function(){
+    save(KEYS.settings, {
+      highScoreAlert:$("setHighScoreAlert")?.checked || false,
+      showDistance:$("setShowDistance")?.checked || false,
+      captureNotice:$("setCaptureNotice")?.checked || false,
+      autoDeleteChat:$("setAutoDeleteChat")?.checked || false
+    });
+
+    alert("설정이 저장되었습니다.");
+    renderNoticePanel();
+  };
+
+  function renderScoreGuide(){
+    const match = $("screen-matching") || $("matching") || $("screen-home") || document.body;
+    let panel = $("scoreGuidePanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "scoreGuidePanel";
+      panel.className = "match-score-panel";
+      match.prepend(panel);
+    }
+
+    panel.innerHTML = `
+      <h3>궁합 점수 안내</h3>
+      <div class="badge-soft">MBTI 100.00점</div>
+      <div class="badge-soft">별자리 100.00점</div>
+      <div class="badge-soft">사주 100.00점</div>
+      <p style="font-size:13px;color:#374151;margin-top:8px;">
+        홈과 매칭 화면의 총점은 <b>300.00점 만점</b> 기준입니다.
+      </p>
+      <p style="font-size:12px;color:#6b7280;">
+        사주궁합은 내부적으로 시기별 흐름을 참고하지만, 사용자에게는 전체 흐름과 총점 중심으로 보여줍니다.
+        궁합이 좋더라도 실제 관계는 성격, 환경, 대화, 매너, 가치관에 따라 달라질 수 있으므로 맹신하지 않아야 합니다.
+      </p>
+
+      <div class="match-filter-row">
+        <button id="filterScore50" onclick="toggleMatchFilter('score')">50점 이상</button>
+        <button id="filterOnline" onclick="toggleMatchFilter('online')">접속중</button>
+      </div>
+    `;
+  }
+
+  window.toggleMatchFilter = function(type){
+    if(type === "score"){
+      $("filterScore50")?.classList.toggle("active");
+      alert("50점 이상 필터가 전환되었습니다.");
+    }
+
+    if(type === "online"){
+      $("filterOnline")?.classList.toggle("active");
+      alert("접속중 필터가 전환되었습니다.");
+    }
+  };
+
+  function patchMatchCards(){
+    const cards = document.querySelectorAll(".match-card, .profile-card, .candidate-card");
+
+    cards.forEach((card, index) => {
+      if(card.dataset.patched === "true") return;
+      card.dataset.patched = "true";
+
+      const mbtiScore = (70 + Math.random() * 30).toFixed(2);
+      const starScore = (65 + Math.random() * 35).toFixed(2);
+      const sajuScore = (60 + Math.random() * 40).toFixed(2);
+      const total = (Number(mbtiScore) + Number(starScore) + Number(sajuScore)).toFixed(2);
+
+      const info = document.createElement("div");
+      info.className = "score-mini";
+      info.innerHTML = `
+        MBTI ${mbtiScore} / 별자리 ${starScore} / 사주 ${sajuScore}<br>
+        <b>총점 ${total} / 300.00</b>
+      `;
+
+      card.appendChild(info);
+
+      const btn = document.createElement("button");
+      btn.className = "patch-btn-light";
+      btn.innerText = "상세보기 / 채팅신청";
+      btn.onclick = function(){
+        alert(
+          `궁합 상세\n\n` +
+          `MBTI: ${mbtiScore}/100.00\n` +
+          `별자리: ${starScore}/100.00\n` +
+          `사주: ${sajuScore}/100.00\n` +
+          `총점: ${total}/300.00\n\n` +
+          `사주는 현재·중년·말년 흐름을 참고하되, 점수와 설명 중심으로 제공합니다.`
+        );
+        requestChatWithMatch("매칭 상대");
+      };
+
+      card.appendChild(btn);
+    });
+  }
+
+  function renderReferralPanel(){
+    const settings = $("screen-settings") || $("settings") || document.body;
+    let panel = $("referralPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "referralPanel";
+      panel.className = "notice-panel";
+      settings.appendChild(panel);
+    }
+
+    const data = load(KEYS.referral, {code:"", count:0});
+
+    panel.innerHTML = `
+      <h3>추천인 시스템</h3>
+      <input id="referralCodeInput" class="patch-input" placeholder="추천인 코드 입력" value="${data.code || ""}">
+      <button class="patch-btn" onclick="saveReferralCode()">추천인 코드 저장</button>
+      <p style="font-size:12px;color:#6b7280;">
+        추천인 가입 시 무료 알림권, 채팅신청권 등 작은 혜택을 지급하는 구조로 확장 가능합니다.
+      </p>
+    `;
+  }
+
+  window.saveReferralCode = function(){
+    const code = $("referralCodeInput")?.value || "";
+    save(KEYS.referral, {code, count:1});
+    alert("추천인 코드가 저장되었습니다.");
+  };
+
+  function renderPolicyPanel(){
+    const settings = $("screen-settings") || $("settings") || document.body;
+    let panel = $("policyPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "policyPanel";
+      panel.className = "safety-panel";
+      settings.appendChild(panel);
+    }
+
+    panel.innerHTML = `
+      <h3>가입 / 탈퇴 / 재가입 정책</h3>
+      <ul class="notice-list">
+        <li>핸드폰 본인인증 후 앱 사용을 원칙으로 합니다.</li>
+        <li>동일 휴대폰 번호로 2개 이상 계정 생성을 금지합니다.</li>
+        <li>동일 IP·기기에서 비정상적으로 많은 가입 시 위험 가입으로 분류합니다.</li>
+        <li>탈퇴 후 즉시 재가입은 제한하고, 일정 기간 이후 재가입 가능하도록 운영합니다.</li>
+        <li>신고누적, 경고누적, 추방 계정은 재가입을 제한합니다.</li>
+      </ul>
+      <p style="font-size:12px;color:#dc2626;">
+        실제 중복가입 차단, 본인인증, 결제, 영구정지는 Firebase/서버/본인인증 업체 연동이 필요합니다.
+      </p>
+    `;
+  }
+
+  function renderPhotoSafetyPanel(){
+    const home = $("screen-home") || $("home") || document.body;
+    let panel = $("photoSafetyPanel");
+
+    if(!panel){
+      panel = document.createElement("div");
+      panel.id = "photoSafetyPanel";
+      panel.className = "safety-panel";
+      home.appendChild(panel);
+    }
+
+    panel.innerHTML = `
+      <h3>사진도용 / 초상권 보호</h3>
+      <ul class="notice-list">
+        <li>프로필 사진 도용 신고 항목을 제공합니다.</li>
+        <li>상대방 사진 무단 저장·유포·외부 메신저 전송은 제재 대상입니다.</li>
+        <li>안드로이드 APK에서는 캡쳐방지 기능을 적용할 수 있습니다.</li>
+        <li>웹에서는 완전한 캡쳐방지가 어렵기 때문에 경고문, 워터마크, 신고 시스템을 함께 적용해야 합니다.</li>
+      </ul>
+    `;
+  }
+
+  function enhanceProfileInputs(){
+    const profile = $("screen-profile") || $("profileForm") || document.body;
+
+    function addSelect(id, label, options){
+      if($(id)) return;
+
+      const wrap = document.createElement("div");
+      wrap.innerHTML = `
+        <label style="font-weight:600;">${label}</label>
+        <select id="${id}" class="patch-select">
+          <option value="">선택 안 함</option>
+          ${options.map(o => `<option>${o}</option>`).join("")}
+        </select>
+      `;
+      profile.appendChild(wrap);
+    }
+
+    addSelect("job", "직업", [
+      "회사원","자영업","전문직","공무원","프리랜서","사업가","의료직","교육직","IT/개발","금융직","예술/디자인","서비스직","기타"
+    ]);
+
+    addSelect("education", "학력", [
+      "고등학교 졸업","전문대 졸업","대학교 졸업","대학원 졸업","박사","입력 거부"
+    ]);
+
+    addSelect("income", "연봉", [
+      "입력 거부","2천만원 미만","2천~3천만원","3천~5천만원","5천~7천만원","7천~1억원","1억원 이상"
+    ]);
+
+    addSelect("favoriteFood", "좋아하는 음식", [
+      "한식","중식","양식","일식","분식","고기","해산물","디저트","카페","기타"
+    ]);
+
+    addSelect("hobby", "취미", [
+      "독서","영화","음악감상","운동","등산","러닝","여행","맛집","게임","드라이브","요리","기타"
+    ]);
+
+    if(!$("preferredStyle")){
+      const wrap = document.createElement("div");
+      wrap.innerHTML = `
+        <label style="font-weight:600;">선호하는 체형/스타일</label>
+        <select id="preferredStyle" class="patch-select">
+          <option value="">선택 안 함</option>
+          <option>늘씬형</option>
+          <option>글래머형</option>
+          <option>통통형</option>
+          <option>마른형</option>
+          <option>근육형</option>
+          <option>보통형</option>
+        </select>
+      `;
+      profile.appendChild(wrap);
+    }
+  }
+
+  function patchDailyChatDate(){
+    const chatArea = $("chatMessages") || $("chatBox") || document.querySelector(".chat-box");
+    if(!chatArea) return;
+
+    if($("chatDateNotice")) return;
+
+    const div = document.createElement("div");
+    div.id = "chatDateNotice";
+    div.style.textAlign = "center";
+    div.style.fontSize = "12px";
+    div.style.color = "#9ca3af";
+    div.style.margin = "8px 0";
+    div.innerText = "오늘 날짜: " + new Date().toLocaleDateString();
+
+    chatArea.prepend(div);
+  }
+
+  function initPatch2(){
+    initChatCredit();
+    initNotices();
+
+    renderNoticePanel();
+    renderPayPanel();
+    renderReportPanel();
+    renderTrustPanel();
+    renderSettingsPatch();
+    renderScoreGuide();
+    renderReferralPanel();
+    renderPolicyPanel();
+    renderPhotoSafetyPanel();
+    enhanceProfileInputs();
+    patchMatchCards();
+    patchDailyChatDate();
+
+    setInterval(patchMatchCards, 1500);
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", initPatch2);
+  } else {
+    initPatch2();
+  }
+})();
+</script>
   
 </body>
 </html>
