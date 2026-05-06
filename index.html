@@ -1,36 +1,397 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#12101d" />
-  <title>나의 인연</title>
+  <title>별자리궁합 · 사주팔자궁합 · MBTI 궁합 매칭앱</title>
   <link rel="stylesheet" href="./style.css" />
 </head>
+
 <body>
-  <div id="app" class="app-shell">
+  <div id="app">
+
+    <!-- 01. 상단 -->
     <header class="app-header">
-      <div>
-        <p class="eyebrow">성인 전용 궁합 매칭</p>
-        <h1 id="appTitle">나의 인연</h1>
-        <p class="subtitle">사주팔자 · MBTI · 별자리 궁합 매칭 앱</p>
+      <div class="brand-row">
+        <div class="app-icon">
+          <img src="./assets/app-icon.png" alt="앱 아이콘" />
+        </div>
+        <div>
+          <h1>별자리궁합</h1>
+          <p>사주 · 별자리 · MBTI 궁합 매칭 앱</p>
+        </div>
       </div>
-      <button id="adminHiddenEntry" class="ghost-btn" aria-label="관리자 숨김 진입">앱 정보</button>
     </header>
 
-    <main id="screenRoot" class="screen-root"></main>
+    <!-- 02. 홈 화면 -->
+<main class="screen active" id="screen-home">
+  <section class="home-card home-chat-combo">
+    <div class="home-title-row">
+      <div>
+        <p class="mini-title left">오늘의 추천 궁합</p>
+        <h2>궁합 좋은 상대와<br>바로 대화를 시작하세요</h2>
+      </div>
+     
+    </div>
 
-    <nav class="bottom-nav" aria-label="하단 메뉴">
-      <button data-tab="home" class="nav-btn active">홈</button>
-      <button data-tab="match" class="nav-btn">궁합</button>
-      <button data-tab="chat" class="nav-btn">채팅</button>
-      <button data-tab="profile" class="nav-btn">프로필</button>
-      <button data-tab="settings" class="nav-btn">설정</button>
-    </nav>
+    <div class="best-match">
+      <div class="profile-small">
+        <img src="./assets/profile-man.png" alt="내 프로필" />
+        <span>나</span>
+      </div>
+      <div class="heart-score"><span>92점</span></div>
+      <div class="profile-small">
+        <img src="./assets/profile-woman.png" alt="상대 프로필" />
+        <span>추천 상대</span>
+      </div>
+    </div>
+
+<div class="home-quick-chat">
+  <div class="chat-preview-head">
+    <strong>최근 대화</strong>
+    <span>15일 후 자동 삭제 안내</span>
   </div>
 
-  <div id="toast" class="toast hidden"></div>
+  <div id="homeRecentChat">
+    <div class="chat-bubble other">아직 최근 대화가 없습니다.</div>
+  </div>
 
-  <script type="module" src="./app.js"></script>
+  <button class="sub-btn" onclick="openRecentChatFromHome()">
+    최근 대화상대와 대화하기
+  </button>
+</div>
+
+    <button class="primary-btn" onclick="goScreen('matches')">추천 궁합 목록 보기</button>
+    <button class="sub-btn" onclick="goScreen('chatList')">진행중인 채팅방</button>
+  </section>
+
+  <section class="notice-card">
+    <strong>안전 안내</strong>
+    <p>
+      앱 채팅은 성인 인증 완료 사용자만 이용할 수 있습니다.
+      외부 메신저 유도, 조건만남, 금전 요구, 범죄 의심 문구는 자동 차단됩니다.
+    </p>
+  </section>
+<section class="home-chat-list">
+  <div class="chat-preview-head">
+    <strong>최근 채팅방</strong>
+    <span>홈에서 바로 대화 가능</span>
+  </div>
+
+  <div id="homeChatRoomList">
+    <div class="match-card">
+      <h3>진행중인 채팅방 없음</h3>
+      <p>궁합 상세 페이지에서 채팅을 시작하면 여기에 표시됩니다.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+    <!-- 03. 추천 궁합 목록 -->
+    <main class="screen" id="screen-matches">
+      <div class="screen-title">
+        <h2>추천 궁합 목록</h2>
+        <p>50점 이상만 프로필 열람 및 채팅 연결이 가능합니다.</p>
+      </div>
+
+      <div class="filter-tabs">
+        <button class="tab active">전체</button>
+        <button class="tab">50점 이상</button>
+        <button class="tab">접속중</button>
+      </div>
+
+      <section id="matchList" class="match-list"></section>
+    </main>
+
+    <!-- 04. 궁합 상세 -->
+    <main class="screen" id="screen-detail">
+      <div class="detail-top">
+        <button class="back-btn" onclick="goScreen('matches')">‹</button>
+        <h2>궁합 상세 페이지</h2>
+      </div>
+
+      <section class="detail-card">
+        <div class="detail-users">
+          <div>
+            <img src="./assets/profile-man.png" alt="나" />
+            <span>나</span>
+          </div>
+
+          <div class="big-heart">
+            <strong id="detailTotalScore">82점</strong>
+          </div>
+
+          <div>
+            <img src="./assets/profile-woman.png" alt="상대" />
+            <span id="detailPartnerName">지우</span>
+          </div>
+        </div>
+
+        <div class="score-box">
+          <h3>종합 궁합 점수</h3>
+          <p><strong id="detailGrade">좋은 궁합</strong></p>
+          <p id="detailReason">
+            사주, MBTI, 별자리 궁합을 종합하여 계산한 결과입니다.
+          </p>
+        </div>
+
+        <div class="score-bars">
+  <div class="bar-item">
+    <div class="bar-label">사주 궁합</div>
+    <div class="bar-bg">
+      <div id="barSaju" class="bar-fill"></div>
+    </div>
+    <div id="detailSajuScore" class="bar-score"></div>
+  </div>
+
+  <div class="bar-item">
+    <div class="bar-label">MBTI 궁합</div>
+    <div class="bar-bg">
+      <div id="barMbti" class="bar-fill"></div>
+    </div>
+    <div id="detailMbtiScore" class="bar-score"></div>
+  </div>
+
+  <div class="bar-item">
+    <div class="bar-label">별자리 궁합</div>
+    <div class="bar-bg">
+      <div id="barStar" class="bar-fill"></div>
+    </div>
+    <div id="detailStarScore" class="bar-score"></div>
+  </div>
+</div>
+
+        <div class="analysis-card">
+          <h3>사주 세부 흐름</h3>
+          <p id="detailSajuText">
+            년지, 월지, 일지, 시지 기준으로 인생 구간별 궁합 흐름을 보여줍니다.
+          </p>
+        </div>
+
+        <div class="analysis-card">
+          <h3>MBTI 궁합 설명</h3>
+          <p id="detailMbtiText">
+            성향 차이와 대화 방식, 감정 표현 방식의 조화를 기준으로 설명합니다.
+          </p>
+        </div>
+
+        <div class="analysis-card">
+          <h3>별자리 궁합 설명</h3>
+          <p id="detailStarText">
+            감정 흐름, 관계 속도, 끌림과 안정감을 기준으로 설명합니다.
+          </p>
+        </div>
+
+        <button class="primary-btn" id="detailChatBtn" onclick="openChatFromDetail()">
+          채팅 시작하기
+        </button>
+      </section>
+    </main>
+
+    <!-- 05. 채팅방 리스트 -->
+    <main class="screen" id="screen-chatList">
+      <div class="screen-title">
+        <h2>진행중인 채팅방</h2>
+        <p>채팅 내용은 일정 기간 후 자동 삭제됩니다.</p>
+      </div>
+
+      <section id="chatRoomList" class="chat-room-list"></section>
+    </main>
+
+    <!-- 06. 채팅 화면 -->
+    <main class="screen" id="screen-chat">
+      <div class="chat-header">
+        <button class="back-btn" onclick="goScreen('chatList')">‹</button>
+        <div>
+          <h2 id="chatPartnerName">상대</h2>
+          <p>채팅 내용은 15일 후 자동 삭제될 수 있습니다.</p>
+        </div>
+      </div>
+
+      <section class="chat-warning">
+        외부 메신저 유도, 조건만남, 금전 요구, 연락처 교환 유도 문구는 차단될 수 있습니다.
+      </section>
+
+      <section id="chatMessages" class="chat-messages"></section>
+
+      <div class="chat-input-box">
+        <input id="chatInput" type="text" placeholder="메시지를 입력하세요" />
+        <button onclick="sendMessage()">전송</button>
+      </div>
+    </main>
+
+    <!-- 07. 프로필 -->
+    <main class="screen" id="screen-profile">
+      <div class="screen-title">
+        <h2>프로필 입력</h2>
+        <p>생년월일시는 외부에 공개되지 않고 궁합 계산에만 사용됩니다.</p>
+      </div>
+
+      <section class="form-card">
+        <label>프로필 이미지</label>
+        <input type="file" accept="image/*" id="profileImage" />
+
+        <label>닉네임</label>
+        <input id="nickname" type="text" placeholder="닉네임" />
+
+        <label>성별</label>
+        <select id="gender">
+          <option value="">선택</option>
+          <option value="male">남성</option>
+          <option value="female">여성</option>
+        </select>
+
+        <label>생년월일시</label>
+        <div class="grid-4">
+          <input id="birthYear" type="number" placeholder="연도" />
+          <input id="birthMonth" type="number" placeholder="월" />
+          <input id="birthDay" type="number" placeholder="일" />
+          <input id="birthHour" type="number" placeholder="시" />
+        </div>
+
+        <label>MBTI</label>
+        <select id="mbti">
+          <option value="">선택</option>
+          <option>INTJ</option><option>INTP</option><option>ENTJ</option><option>ENTP</option>
+          <option>INFJ</option><option>INFP</option><option>ENFJ</option><option>ENFP</option>
+          <option>ISTJ</option><option>ISFJ</option><option>ESTJ</option><option>ESFJ</option>
+          <option>ISTP</option><option>ISFP</option><option>ESTP</option><option>ESFP</option>
+        </select>
+
+        <label>지역</label>
+        <select id="region">
+          <option value="">선택</option>
+          <option>서울특별시</option>
+          <option>부산광역시</option>
+          <option>대구광역시</option>
+          <option>인천광역시</option>
+          <option>광주광역시</option>
+          <option>대전광역시</option>
+          <option>울산광역시</option>
+          <option>세종특별자치시</option>
+          <option>경기도</option>
+          <option>강원특별자치도</option>
+          <option>충청북도</option>
+          <option>충청남도</option>
+          <option>전라북도</option>
+          <option>전라남도</option>
+          <option>경상북도</option>
+          <option>경상남도</option>
+          <option>제주특별자치도</option>
+        </select>
+
+        <label>키 / 직업 / 학력 / 연봉</label>
+        <div class="grid-2">
+          <input id="height" type="text" placeholder="키" />
+          <input id="job" type="text" placeholder="직업" />
+          <input id="education" type="text" placeholder="학력" />
+          <input id="income" type="text" placeholder="연봉" />
+        </div>
+
+        <label>체형 / 스타일 / 주량 / 흡연</label>
+        <div class="grid-2">
+          <input id="bodyType" type="text" placeholder="체형" />
+          <input id="styleType" type="text" placeholder="스타일" />
+          <input id="drink" type="text" placeholder="주량" />
+          <input id="smoke" type="text" placeholder="흡연유무" />
+        </div>
+
+        <label>자기소개</label>
+        <textarea id="intro" placeholder="자신을 표현할 수 있는 소개글"></textarea>
+
+        <label>선호하는 체형/스타일</label>
+        <textarea id="preference" placeholder="선호하는 상대 스타일"></textarea>
+
+        <button class="primary-btn" onclick="saveProfile()">프로필 저장</button>
+      </section>
+    </main>
+
+    <!-- 08. 웹 연동 -->
+    <main class="screen" id="screen-webLink">
+      <div class="screen-title">
+        <h2>웹 궁합 서비스</h2>
+        <p>웹에서는 채팅 없이 재미용 궁합 확인만 제공합니다.</p>
+      </div>
+
+      <section class="notice-card">
+        <p>
+          웹페이지는 전 연령이 이용 가능한 재미용 궁합 서비스로 운영하고,
+          앱은 성인 인증 후 채팅 가능한 매칭 서비스로 분리합니다.
+        </p>
+
+        <button class="primary-btn" onclick="openWebService()">
+          웹 궁합 페이지 열기
+        </button>
+      </section>
+    </main>
+
+    <!-- 09. 설정 -->
+    <main class="screen" id="screen-settings">
+      <div class="screen-title">
+        <h2>설정</h2>
+        <p>알림, 약관, 신고, 계정 관리를 확인합니다.</p>
+      </div>
+
+      <section class="setting-list">
+        <button onclick="toggleAlarmSetting()">실시간 채팅 알림 설정</button>
+        <button onclick="openTextModal('terms')">이용약관</button>
+        <button onclick="openTextModal('privacy')">개인정보처리방침</button>
+        <button onclick="openTextModal('ugc')">UGC 이용약관</button>
+        <button onclick="openTextModal('report')">신고/차단 정책</button>
+        <button onclick="openTextModal('delete')">계정 삭제 안내</button>
+        <button onclick="openTextModal('contact')">문의하기</button>
+
+        <button class="hidden-admin-entry" onclick="openAdminGate()">
+          앱 정보
+        </button>
+      </section>
+    </main>
+
+    <!-- 10. 관리자 -->
+    <main class="screen" id="screen-admin">
+      <div class="screen-title">
+        <h2>관리자 통계</h2>
+        <p>일반 사용자에게는 숨겨진 관리자 화면입니다.</p>
+      </div>
+
+<section class="admin-grid">
+  <div><span>오늘 가입자</span><strong id="adminTodayUsers">0명</strong></div>
+  <div><span>전체 가입자</span><strong id="adminTotalUsers">0명</strong></div>
+  <div><span>10대</span><strong id="adminAge10">0명</strong></div>
+  <div><span>20대</span><strong id="adminAge20">0명</strong></div>
+  <div><span>30대</span><strong id="adminAge30">0명</strong></div>
+  <div><span>40대</span><strong id="adminAge40">0명</strong></div>
+  <div><span>50대 이상</span><strong id="adminAge50">0명</strong></div>
+  <div><span>현재 접속자</span><strong id="adminOnlineUsers">0명</strong></div>
+</section>
+
+<section class="admin-chat-stats">
+  <h3>시간대별 채팅 데이터</h3>
+  <div id="adminChatHourly"></div>
+</section>
+    </main>
+
+    <!-- 11. 하단 메뉴 -->
+<nav class="bottom-nav">
+  <button onclick="goScreen('home')">홈</button>
+  <button onclick="goScreen('matches')">궁합</button>
+  <button onclick="goScreen('profile')">프로필</button>
+  <button onclick="goScreen('settings')">설정</button>
+</nav>
+
+    <!-- 12. 공통 모달 -->
+    <div class="modal" id="textModal">
+      <div class="modal-box">
+        <button class="modal-close" onclick="closeTextModal()">닫기</button>
+        <h2 id="modalTitle"></h2>
+        <div id="modalBody"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="./script-1.js"></script>
+  <script src="./script-2.js"></script>
+  <script src="./script-3.js"></script>
 </body>
 </html>
